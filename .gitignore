@@ -71,3 +71,6 @@ typings/
 
 # Serverless directories
 .serverless
+mock/rest/*/*/*/mock/response.txt
+
+bdd-api-tester-*.tgz

@@ -1,5 +1,6 @@
-const { isAbsolute, join } = rquire('path');
+const { isAbsolute, join } = require('path');
 const request = require('superagent');
+const SwaggerParser = require('swagger-parser');
 
 const agents = new Map();
 const responseCache = new Map();
@@ -16,11 +17,17 @@ class World {
         this._baseUrl = process.env.BASE_URL || null;
     }
 
+    get baseUrl() {
+        return this._baseUrl;
+    }
+
     get req() {
         return this._req;
     }
 
     set req(val) {
+        // TODO: make this configurable
+        val.timeout({ response: 60000, deadline: 90000 });
         this._req = val;
     }
 
@@ -67,7 +74,7 @@ class World {
         return res.body;
     }
 
-    saveCurrentResponse(path, method, status, response) {
+    async saveCurrentResponse(response) {
         const res = await this.req;
         const { path, method } = this.req;
         const status = res.status.toString();

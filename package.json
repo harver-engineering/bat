@@ -1,16 +1,18 @@
 {
   "name": "bdd-api-tester",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Base for testing APIs with Cucumber",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "jsdoc2md --partial jsdoc/scope.hbs --partial jsdoc/header.hbs --files src/steps.js> STEPS.md",
+    "start": "node test/server",
+    "test": "BASE_URL=http://localhost:3000 API_SPEC_FILE=test/openapi.yaml cucumber-js test"
   },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@bitbucket.org/harver/bdd-api-tester.git"
   },
-  "author": "",
+  "author": "Phil Mander<philip@harver.com>",
   "license": "ISC",
   "homepage": "https://bitbucket.org/harver/bdd-api-tester#readme",
   "dependencies": {
@@ -18,6 +20,16 @@
     "chai": "^4.2.0",
     "cookie": "^0.3.1",
     "jsonpath-plus": "^0.16.0",
-    "superagent": "^4.0.0-beta.5"
+    "superagent": "^4.0.0-beta.5",
+    "swagger-parser": "^5.0.5"
+  },
+  "devDependencies": {
+    "body-parser": "^1.18.3",
+    "cucumber": "^5.0.1",
+    "express": "^4.16.3",
+    "jsdoc-to-markdown": "^4.0.1"
+  },
+  "peerDependencies": {
+    "cucumber": "5.x"
   }
 }
