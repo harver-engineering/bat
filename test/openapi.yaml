@@ -64,6 +64,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/NewPet'
+            example: { "type": "Racoon", "name": "Ronny" }
       responses:
         '200':
           description: pet response
@@ -131,9 +132,11 @@ components:
           - id
           properties:
             id:
-              type: integer
-              format: int64
-
+              type: string
+            name:
+              type: string
+            type:
+              type: string
     NewPet:
       required:
         - name

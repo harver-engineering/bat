@@ -6,7 +6,6 @@ const { expect } = chai;
 const ajv = new Ajv();
 
 const methodsWithBodies = [ 'POST', 'PUT', 'PATCH', 'DELETE'];
-const placeHolderRegex = /[^{]+(?=})/g;
 
 /** @module steps */
 
@@ -36,7 +35,7 @@ function registerSteps({ Given, When, Then }) {
 
     /**
      * ### When I send a {method} request to {resource}
-     * Construct a request to an resource using an HTTP method
+     * Construct a request to a resource using an HTTP method
      * Note: this should be the first "When"
      *
      * @example
@@ -93,7 +92,8 @@ function registerSteps({ Given, When, Then }) {
 
     /**
      * ### When I add the example request body
-     * Adds a request body extracted from the open api spec
+     * Adds a request body extracted from the open api spec for this request's resource and method
+     * See the [test openapi.yaml](../test/openapi.yaml) for an example.
      *
      * @example
      * When I add the example request body
@@ -109,8 +109,24 @@ function registerSteps({ Given, When, Then }) {
     });
 
     /**
+     * ### When I set the request header:
+     * Set a header on the request using a data table
+     *
+     * @example
+     * When I set the request header:
+     *   | Name   | Accept-Language |
+     *   | Value  | en              |
+     *
+     * @function setRequestHeaer
+     */
+    When('I set the request header:', function(headerData) {
+        const { Name: name, Value: value } = headerData.rowsHash();
+        this.req.set(name, value);
+    });
+
+    /**
      * ### When I set the cookie:
-     * Set a cookie on the request
+     * Set a cookie on the request using a data table
      *
      * @example
      * When I set the cookie:
@@ -118,30 +134,47 @@ function registerSteps({ Given, When, Then }) {
      *   | Value  | bar |
      *   | Flags  | Expires=21 Oct 2015 07:28:00 GMT; Secure; HttpOnly; Path=\/ |
      *
-     * @function setCookie
+     * @function setRequestCookie
      */
     When('I set the cookie:', function(cookieData) {
         const { Name: name, Value: value, Flags: flags } = cookieData.rowsHash();
-        this.req.set('Cookie', `${name}=${value};${flags}`);
+        this.req.set('Cookie', `${name}=${value}${flags ? `;${flags}` : ''}`);
     });
 
     /**
-     * ### When I set the placeholder {string} with the response json path {jsonPath} from the last {method} to {resource}
+     * ### When I set the placeholder {string} using the json path {jsonPath} from the last {method} to {resource}
      *
-     * Test and document me
+     * Say, in a previous scenario, a 'GET' request was sent '/pets'. We can extract data from
+     * this response and use it to populate placeholders in subsequent requests.
+     *
+     * The example below will extract an id from a previously retrieved set of pets. And use it
+     * to populate the placeholder to get a specific pet resource
+     *
+     * @example
+     * When I send a 'GET' request to '/pets/{id}'
+     * And I set the placeholder 'id' using the json path '$.[0].id' from the last 'GET' to '/pets'
+     *
+     * @function populateRequestPathPlaceholder
      */
-    When('I set the placeholder {string} with the response json path {string} from the last {string} to {string}', function(placeHolder, jsonPath, method, path){
-        const parsedResponse = this.retrieveResponse(path, method);
+    When('I set the placeholder {string} using the json path {string} from the last {string} to {string}', function(placeHolder, jsonPath, previousMethod, previousPath){
+        const previousResponse = this.retrieveResponse(previousPath, previousMethod);
+        const placeHolderValue = JSONPath.eval(previousResponse, jsonPath)[0];
+        const placeHolderRegex = new RegExp(`\{${placeHolder}\}`, 'g');
 
-        // Iterate over the string 'url' and replace any {placeHolders} if present with dynamic data from context
-        const extractKeys = currentPath.match(placeHolderRegex) || [];
+        this.req.url = this.req.url.replace(placeHolderRegex, placeHolderValue);
 
-        for (const key of extractKeys) {
-            const placeHolderValue = JSONPath.eval(parsedResponse, jsonPath)[0];
-            currentPath = key === placeHolder ? currentPath.replace(`{${key}}`, placeHolderValue) : currentPath;
+        // replace this placeholder in request body and query string
+        if(this.req._data) {
+            this.req._data = JSON.parse(
+                JSON.stringify(this.req._data).replace(placeHolderRegex, placeHolderValue)
+            );
         }
 
-        this.req = this.currentAgent[method](this.baseUrl + currentPath);
+        if(this.req.qs) {
+            this.req.qs = JSON.parse(
+                JSON.stringify(this.req.qs).replace(placeHolderRegex, placeHolderValue)
+            );
+        }
     });
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,7 +194,8 @@ function registerSteps({ Given, When, Then }) {
      */
     Then('I should receive a response with the status {int}', async function(status) {
         // this sends the request
-        // (await will implictly call `then()` on the SuperAgent request object)
+        // (await will implictly call `then()` on the SuperAgent request object,
+        // which will implicitly send the request)
         try {
             const res = await this.req;
             this.saveCurrentResponse();
@@ -203,14 +237,22 @@ function registerSteps({ Given, When, Then }) {
      */
     Then('the response body json path at {string} should equal {string}', async function(path, value) {
         const res = await this.req;
-        const body = this.parseJsonResponse(res);
+        const body = this.getResponseBody(res);
         const actualValue = JSONPath.eval(body, path)[0];
         expect(actualValue).to.equal(value);
     });
 
     /**
-     * ### Then I should receive a response that sets the cookie
-     * @todo Test and document me
+     * ### Then I should receive a response that sets the cookie:
+     *
+     * Asserts that a response sent a cookie to the client
+     *
+     * @example
+     * I should receive a response that sets the cookie
+     *   | Name  | foo |
+     *   | Value | bar |
+     *
+     * @function setResponseCookie
      */
     Then('I should receive a response that sets the cookie', async function(expectedCookieData) {
         const {
@@ -220,11 +262,6 @@ function registerSteps({ Given, When, Then }) {
         } = expectedCookieData.rowsHash();
         const res = await this.req;
         const cookieStr = res.header['set-cookie'].find(cookieStr => cookieStr.startsWith(cookieName));
-
-        if(!cookieStr) {
-            throw new Error(`Could not find set-cookie with name "${cookieName}`);
-        }
-
         const parsedCookie = cookie.parse(cookieStr);
 
         if(cookieValue) {
@@ -235,32 +272,58 @@ function registerSteps({ Given, When, Then }) {
         }
     });
 
+    // Function used for asserting a response validates against a given schema
+    async function validateResponseAgainstSchema(schema) {
+        const validate = ajv.compile(schema);
+
+        // get response and validate its body against the schema
+        const res = await this.req;
+        const body = this.getResponseBody(res);
+        const valid = validate(body);
+
+        if (valid){
+            expect(valid).to.be.true;
+        } else {
+            expect.fail(null, null, JSON.stringify(validate.errors));
+        }
+    }
+
     /**
      * ### Then the response body should validate against its response schema
-     * @todo Test and document me
+     *
+     * This will extract the response body json schemea from the Open API spec and
+     * validate the current response body against it
+     *
+     * @example
+     * Then the response body should validate against its response schema
+     *
+     * @function validateAgainstSchema
      */
     Then('the response body should validate against its response schema', async function() {
         const spec = await this.getEndpointSpec();
-        const schema = spec.content['application/json'].schema;
-        const validate = ajv.compile(schema);
+        const { schema } = spec.responses[200].content['application/json'];
+        await validateResponseAgainstSchema.call(this, schema);
+    });
 
-        // get response
-        const res = await this.req;
-        // validate the response body
-        const body = this.parseJsonResponse(res);
-
-        const valid = validate(body);
-        if (!valid){
-            try {
-                expect(valid).to.be.true;
-            } catch (e) {
-                expect.fail(null, null, JSON.stringify(validate.errors));
-            }
-            return;
-        }
+    /**
+     * ### Then the response body should validate against its response schema
+     *
+     * This allows to provide an inline response schema to validate the current
+     * response body against. Generally not recommend because this can make the
+     * feature file very verbose.
+     *
+     * @example
+     * Then the response body should validate against the response schema:
+     * """
+     * { ... }
+     * """
+     *
+     * @function validateAgainstInlineSchema
+     */
+    Then('the response body should validate against the response schema:', async function(schema) {
+        await validateResponseAgainstSchema.call(this, JSON.parse(schema));
     });
 }
-
 
 module.exports = {
     registerSteps,

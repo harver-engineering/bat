@@ -4,12 +4,9 @@ A Gherkin DSL for testing REST APIs via Cucumber.JS.
 
 ## Install
 
-We don't have an NPM registry yet. Clone this repo and run `npm pack`. Install the resulting tarball
-file in the target package. E.g.
-
 ```
 cd my-repo
-npm i --save-dev bdd-api-tester-0.1.0.tgz
+npm i --save-dev gti+ssh://git@bitbucket.org:harver/bdd-api-tester.git
 ```
 
 ## Usage
@@ -18,7 +15,7 @@ npm i --save-dev bdd-api-tester-0.1.0.tgz
 
 `npm install --save-dev cucumber`
 
-### 2. Create `features/setup.js`:
+### 2. Create `features/support/setup.js` with the following code:
 
 ```javascript
 const {
@@ -47,7 +44,7 @@ Given('I am logged in', function() {
 })
 ```
 
-### 3. Write Feature files and Scenarios
+### 3. Write feature files and scenarios
 
 `features/some-scenario.feature`:
 
@@ -68,4 +65,6 @@ Scenario: Testing Gets
 
 ## Reference
 
-[Steps reference](./STEPS.md)
+[Steps reference](./step-reference.md) for support writing feature files.
+
+[World API](./world-api.md) for support writing custom step definitions.
