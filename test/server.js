@@ -68,7 +68,7 @@ app.put('/pets/:id', (req, res, next) => {
 app.use((err, req, res, next) => {
     console.warn(err.message);
     res.status(err instanceof AssertionError ? 418 : (err.status || 500));
-    res.send(err.message);
+    res.send({message: err.message});
 })
 
 app.listen(3000);

@@ -201,6 +201,10 @@ function registerSteps({ Given, When, Then }) {
             this.saveCurrentResponse();
             expect(res.status).to.equal(status);
         } catch(err) {
+            if (err.status) {
+                expect(err.status).to.equal(status);
+                return;
+            }
             throw new Error(err);
         }
     });
@@ -276,9 +280,15 @@ function registerSteps({ Given, When, Then }) {
     async function validateResponseAgainstSchema(schema) {
         const validate = ajv.compile(schema);
 
-        // get response and validate its body against the schema
-        const res = await this.req;
-        const body = this.getResponseBody(res);
+        let body = null;
+        try {
+            // get response and validate its body against the schema
+            const res = await this.req;
+            body = this.getResponseBody(res);
+        } catch (err) {
+            body = err.body;
+        }
+
         const valid = validate(body);
 
         if (valid){
