@@ -6,7 +6,8 @@
   "scripts": {
     "prepublish": "jsdoc2md --partial jsdoc/scope.hbs --partial jsdoc/header.hbs --files src/steps.js> step-reference.md && jsdoc2md --files src/world.js> world-api.md",
     "start": "node test/server",
-    "test": "BASE_URL=http://localhost:3000 API_SPEC_FILE=test/openapi.yaml cucumber-js test"
+    "cucumber" : "BASE_URL=http://localhost:3000 API_SPEC_FILE=test/openapi.yaml cucumber-js test",
+    "test": "./run-tests.sh"
   },
   "repository": {
     "type": "git",
