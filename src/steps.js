@@ -240,8 +240,15 @@ function registerSteps({ Given, When, Then }) {
      * @function responseBodyJsonPath
      */
     Then('the response body json path at {string} should equal {string}', async function(path, value) {
-        const res = await this.req;
-        const body = this.getResponseBody(res);
+        let body = null;
+
+        try {
+            const res = await this.req;
+            body = this.getResponseBody(res);
+        } catch (err) {
+            body = err.response.body;
+        }
+
         const actualValue = JSONPath.eval(body, path)[0];
         expect(actualValue).to.equal(value);
     });

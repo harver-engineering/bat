@@ -91,10 +91,4 @@ Feature: API Testing Steps
   Scenario: Can Test status code 4**
     When I send a 'PUT' request to '/pets/5000'
     Then I should receive a response with the status 418
-    And the response body should validate against the response schema:
-       """
-       {
-          "message": "'5000' == '1000'"
-       }
-       """
-
+    And the response body json path at "$.message" should equal "'5000' == '1000'"
