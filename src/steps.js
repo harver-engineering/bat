@@ -192,7 +192,7 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function receiveRequestWithStatus
      */
-    Then('I should receive a response with the status {int}', async function(status) {
+    Then('I should receive a response with the status {int}', { timeout: 10 * 1000 }, async function(status) {
         // this sends the request
         // (await will implictly call `then()` on the SuperAgent request object,
         // which will implicitly send the request)
