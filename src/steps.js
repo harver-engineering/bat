@@ -4,6 +4,7 @@ const cookie = require('cookie');
 const JSONPath = require('jsonpath-plus');
 const { expect } = chai;
 const ajv = new Ajv();
+const fs = require('fs');
 
 const methodsWithBodies = [ 'POST', 'PUT', 'PATCH', 'DELETE'];
 
@@ -77,17 +78,15 @@ function registerSteps({ Given, When, Then }) {
      * ### When I add the request body
      * Add a JSON request body included in the Gherkin doc strings
      *
-     * @example
+    * @example
      * When I add the request body
-     *  """
-     *  { "name" : "Ka", "type" : "Snake" }
-     *  """
-     *
+     * |File_Name| 
+     * |json1    |
      * @function addRequestBody
      */
     When('I add the request body:', async function (body) {
-        // this doesn't actually send the request yet
-        this.req.send(body);
+        // Read and send the json data
+        this.req.send(readJson(body.rows()[0][0]));
     });
 
     /**
@@ -271,6 +270,20 @@ function registerSteps({ Given, When, Then }) {
             expect(parsedCookie[cookieName].length).to.be(parseInt(cookieValueLength));
         }
     });
+
+    //Function to get the json file data to feature files
+    function readJson(schemaName) {
+        try {
+            //Read the json data from the file location
+            const data = fs.readFileSync(`json/${schemaName}.json`, 'utf8');
+            return data;
+        }
+        catch (err) {
+            //Print the json file error
+            body = err.body;
+            console.log(body);
+        }
+    }
 
     // Function used for asserting a response validates against a given schema
     async function validateResponseAgainstSchema(schema) {
