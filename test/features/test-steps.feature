@@ -70,6 +70,13 @@ Feature: API Testing Steps
         """
     Then I should receive a response with the status 201
 
+  Scenario: Testing Posts using json file
+    When I send a 'POST' request to '/pets'
+    And I add the request from json file
+      | File_Name   |
+      | sample-json |
+    Then I should receive a response with the status 200
+
   Scenario: Testing openapi spec intergration
     When I send a 'POST' request to '/pets'
     And I add the query string parameters

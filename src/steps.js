@@ -75,18 +75,34 @@ function registerSteps({ Given, When, Then }) {
     });
 
     /**
+     * ### When I add the request from json file
+     * Add a JSON request body included in the Gherkin doc strings to the json file 
+     *
+     * @example
+     * When I add the request from json file
+     * |File_Name  | 
+     * |sample-json|
+     * @function addRequestBodyFromFile
+     */
+    When('I add the request from json file',async function(body) {
+       // Read and send the json data
+       this.req.send(readJson(body.rows()[0][0]));
+    });
+
+    /**
      * ### When I add the request body
      * Add a JSON request body included in the Gherkin doc strings
      *
     * @example
      * When I add the request body
-     * |File_Name| 
-     * |json1    |
+     * """
+     * { "name" : "Ka", "type" : "Snake" }
+     * """
      * @function addRequestBody
      */
     When('I add the request body:', async function (body) {
-        // Read and send the json data
-        this.req.send(readJson(body.rows()[0][0]));
+        // this doesn't actually send the request yet
+        this.req.send(body);
     });
 
     /**
