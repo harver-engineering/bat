@@ -81,7 +81,7 @@ function registerSteps({ Given, When, Then }) {
      * @example
      * When I add the request from json file
      * |File_Name  | 
-     * |sample-json|
+     * |./test/files/json/sample-json|
      * @function addRequestBodyFromFile
      */
     When('I add the request from json file',async function(body) {
@@ -288,10 +288,10 @@ function registerSteps({ Given, When, Then }) {
     });
 
     //Function to get the json file data to feature files
-    function readJson(schemaName) {
+    function readJson(fileName) {
         try {
             //Read the json data from the file location
-            const data = fs.readFileSync(schemaName, 'utf8');
+            const data = fs.readFileSync(fileName, 'utf8');
             return data;
         }
         catch (err) {

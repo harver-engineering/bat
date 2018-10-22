@@ -57,6 +57,15 @@ See the [test openapi.yaml](../test/openapi.yaml) for an example.
 ```js
 When I add the example request body
 ```
+### When I add the request from json file
+Add the relative path of the json file to the read and post the json body     
+
+**Example**  
+```js
+And I add the request from json file
+  | File_Name                        |
+  |./test/files/json/sample-json.json|
+```
 ### When I set the request header:
 Set a header on the request using a data table
 
