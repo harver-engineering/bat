@@ -20,6 +20,8 @@ const pets = [{
 app.get('/pets', (req, res, next) => {
     try {
         equal(req.header['accept-language', 'nl']);
+        equal(req.header['content-type', 'application/json']);
+
         deepEqual(req.cookies, { foo: 'bar', path: '/' });
         equal(req.query.sort, 'desc');
         equal(req.query.filter, 'red');

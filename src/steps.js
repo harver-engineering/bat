@@ -109,19 +109,40 @@ function registerSteps({ Given, When, Then }) {
     });
 
     /**
-     * ### When I set the request header:
-     * Set a header on the request using a data table
+     * ### When I set the request headers:
+     * Set multiple request headers in a single step
      *
      * @example
      * When I set the request header:
      *   | Name   | Accept-Language |
      *   | Value  | en              |
      *
-     * @function setRequestHeaer
+     * @deprecated Use "When I set the request headers" instead
+     * @function setRequestHeader
      */
-    When('I set the request header:', function(headerData) {
-        const { Name: name, Value: value } = headerData.rowsHash();
+    When('I set the request header:', function(tableData) {
+        const { Name: name, Value: value } = tableData.rowsHash();
         this.req.set(name, value);
+    });
+
+    /**
+     * ### When I set the request headers:
+     * Set one or more request headers in a single step
+     *
+     * @example
+     * When I set the request headers:
+     *   | Name             | Value            |
+     *   | Content-Type     | application/json |
+     *   | Accept-Language  | en               |
+     *
+     * @function setRequestHeaders
+     */
+    When('I set the request headers:', function(tableData) {
+        const headerItems = tableData.hashes();
+        for(const header of headerItems) {
+            const { Name: name, Value: value } = header;
+            this.req.set(name, value);
+        }
     });
 
     /**
@@ -134,11 +155,31 @@ function registerSteps({ Given, When, Then }) {
      *   | Value  | bar |
      *   | Flags  | Expires=21 Oct 2015 07:28:00 GMT; Secure; HttpOnly; Path=\/ |
      *
+     * @deprecated Use "When I set the cookies:" instead.
      * @function setRequestCookie
      */
     When('I set the cookie:', function(cookieData) {
         const { Name: name, Value: value, Flags: flags } = cookieData.rowsHash();
         this.req.set('Cookie', `${name}=${value}${flags ? `;${flags}` : ''}`);
+    });
+
+    /**
+     * ### When I set the cookies:
+     * Sets one or more cookies on the request using a data table
+     *
+     * @example
+     * When I set the cookies:
+     *  | Name | Value | Flags  |
+     *  | foo  | bar   | path=/ |
+     *
+     * @function setRequestCookies
+     */
+    When('I set the cookies:', function(tableData) {
+        const cookies = tableData.hashes();
+        for(const cookie of cookies) {
+            const { Name: name, Value: value, Flags: flags } = cookie;
+            this.req.set('Cookie', `${name}=${value}${flags ? `;${flags}` : ''}`);
+        }
     });
 
     /**
