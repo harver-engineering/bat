@@ -73,8 +73,8 @@ Feature: API Testing Steps
   Scenario: Testing Posts using json file
     When I send a 'POST' request to '/pets'
     And I add the request from json file
-      | File_Name   |
-      | sample-json |
+      | File_Name                        |
+      |./test/files/json/sample-json.json|
     Then I should receive a response with the status 200
 
   Scenario: Testing openapi spec intergration

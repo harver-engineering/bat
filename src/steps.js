@@ -291,13 +291,11 @@ function registerSteps({ Given, When, Then }) {
     function readJson(schemaName) {
         try {
             //Read the json data from the file location
-            const data = fs.readFileSync(`json/${schemaName}.json`, 'utf8');
+            const data = fs.readFileSync(schemaName, 'utf8');
             return data;
         }
         catch (err) {
-            //Print the json file error
-            body = err.body;
-            console.log(body);
+            throw new Error(err);
         }
     }
 
