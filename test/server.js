@@ -20,6 +20,8 @@ const pets = [{
 app.get('/pets', (req, res, next) => {
     try {
         equal(req.header['accept-language', 'nl']);
+        equal(req.header['content-type', 'application/json']);
+
         deepEqual(req.cookies, { foo: 'bar', path: '/' });
         equal(req.query.sort, 'desc');
         equal(req.query.filter, 'red');
@@ -68,7 +70,7 @@ app.put('/pets/:id', (req, res, next) => {
 app.use((err, req, res, next) => {
     console.warn(err.message);
     res.status(err instanceof AssertionError ? 418 : (err.status || 500));
-    res.send(err.message);
+    res.send({message: err.message});
 })
 
 app.listen(3000);

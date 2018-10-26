@@ -124,19 +124,40 @@ function registerSteps({ Given, When, Then }) {
     });
 
     /**
-     * ### When I set the request header:
-     * Set a header on the request using a data table
+     * ### When I set the request headers:
+     * Set multiple request headers in a single step
      *
      * @example
      * When I set the request header:
      *   | Name   | Accept-Language |
      *   | Value  | en              |
      *
-     * @function setRequestHeaer
+     * @deprecated Use "When I set the request headers" instead
+     * @function setRequestHeader
      */
-    When('I set the request header:', function(headerData) {
-        const { Name: name, Value: value } = headerData.rowsHash();
+    When('I set the request header:', function(tableData) {
+        const { Name: name, Value: value } = tableData.rowsHash();
         this.req.set(name, value);
+    });
+
+    /**
+     * ### When I set the request headers:
+     * Set one or more request headers in a single step
+     *
+     * @example
+     * When I set the request headers:
+     *   | Name             | Value            |
+     *   | Content-Type     | application/json |
+     *   | Accept-Language  | en               |
+     *
+     * @function setRequestHeaders
+     */
+    When('I set the request headers:', function(tableData) {
+        const headerItems = tableData.hashes();
+        for(const header of headerItems) {
+            const { Name: name, Value: value } = header;
+            this.req.set(name, value);
+        }
     });
 
     /**
@@ -149,11 +170,31 @@ function registerSteps({ Given, When, Then }) {
      *   | Value  | bar |
      *   | Flags  | Expires=21 Oct 2015 07:28:00 GMT; Secure; HttpOnly; Path=\/ |
      *
+     * @deprecated Use "When I set the cookies:" instead.
      * @function setRequestCookie
      */
     When('I set the cookie:', function(cookieData) {
         const { Name: name, Value: value, Flags: flags } = cookieData.rowsHash();
         this.req.set('Cookie', `${name}=${value}${flags ? `;${flags}` : ''}`);
+    });
+
+    /**
+     * ### When I set the cookies:
+     * Sets one or more cookies on the request using a data table
+     *
+     * @example
+     * When I set the cookies:
+     *  | Name | Value | Flags  |
+     *  | foo  | bar   | path=/ |
+     *
+     * @function setRequestCookies
+     */
+    When('I set the cookies:', function(tableData) {
+        const cookies = tableData.hashes();
+        for(const cookie of cookies) {
+            const { Name: name, Value: value, Flags: flags } = cookie;
+            this.req.set('Cookie', `${name}=${value}${flags ? `;${flags}` : ''}`);
+        }
     });
 
     /**
@@ -207,7 +248,7 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function receiveRequestWithStatus
      */
-    Then('I should receive a response with the status {int}', async function(status) {
+    Then('I should receive a response with the status {int}', { timeout: 10 * 1000 }, async function(status) {
         // this sends the request
         // (await will implictly call `then()` on the SuperAgent request object,
         // which will implicitly send the request)
@@ -216,6 +257,10 @@ function registerSteps({ Given, When, Then }) {
             this.saveCurrentResponse();
             expect(res.status).to.equal(status);
         } catch(err) {
+            if (err.status) {
+                expect(err.status).to.equal(status);
+                return;
+            }
             throw new Error(err);
         }
     });
@@ -251,8 +296,15 @@ function registerSteps({ Given, When, Then }) {
      * @function responseBodyJsonPath
      */
     Then('the response body json path at {string} should equal {string}', async function(path, value) {
-        const res = await this.req;
-        const body = this.getResponseBody(res);
+        let body = null;
+
+        try {
+            const res = await this.req;
+            body = this.getResponseBody(res);
+        } catch (err) {
+            body = err.response.body;
+        }
+
         const actualValue = JSONPath.eval(body, path)[0];
         expect(actualValue).to.equal(value);
     });
@@ -303,9 +355,15 @@ function registerSteps({ Given, When, Then }) {
     async function validateResponseAgainstSchema(schema) {
         const validate = ajv.compile(schema);
 
-        // get response and validate its body against the schema
-        const res = await this.req;
-        const body = this.getResponseBody(res);
+        let body = null;
+        try {
+            // get response and validate its body against the schema
+            const res = await this.req;
+            body = this.getResponseBody(res);
+        } catch (err) {
+            body = err.body;
+        }
+
         const valid = validate(body);
 
         if (valid){

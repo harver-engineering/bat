@@ -5,8 +5,10 @@
     * [~addQueryString()](#module_steps..addQueryString)
     * [~addRequestBody()](#module_steps..addRequestBody)
     * [~addRequestBodyFromExample()](#module_steps..addRequestBodyFromExample)
-    * [~setRequestHeaer()](#module_steps..setRequestHeaer)
-    * [~setRequestCookie()](#module_steps..setRequestCookie)
+    * ~~[~setRequestHeader()](#module_steps..setRequestHeader)~~
+    * [~setRequestHeaders()](#module_steps..setRequestHeaders)
+    * ~~[~setRequestCookie()](#module_steps..setRequestCookie)~~
+    * [~setRequestCookies()](#module_steps..setRequestCookies)
     * [~populateRequestPathPlaceholder()](#module_steps..populateRequestPathPlaceholder)
     * [~receiveRequestWithStatus()](#module_steps..receiveRequestWithStatus)
     * [~receiveWithinTime()](#module_steps..receiveWithinTime)
@@ -68,6 +70,10 @@ And I add the request from json file
 ```
 ### When I set the request header:
 Set a header on the request using a data table
+***Deprecated***
+
+### When I set the request headers:
+Set multiple request headers in a single step
 
 **Example**  
 ```js
@@ -75,6 +81,18 @@ When I set the request header:
   | Name   | Accept-Language |
   | Value  | en              |
 ```
+### When I set the request headers:
+Set one or more request headers in a single step
+
+**Example**  
+```js
+When I set the request headers:
+  | Name             | Value            |
+  | Content-Type     | application/json |
+  | Accept-Language  | en               |
+```
+***Deprecated***
+
 ### When I set the cookie:
 Set a cookie on the request using a data table
 
@@ -84,6 +102,15 @@ When I set the cookie:
   | Name   | foo |
   | Value  | bar |
   | Flags  | Expires=21 Oct 2015 07:28:00 GMT; Secure; HttpOnly; Path=\/ |
+```
+### When I set the cookies:
+Sets one or more cookies on the request using a data table
+
+**Example**  
+```js
+When I set the cookies:
+ | Name | Value | Flags  |
+ | foo  | bar   | path=/ |
 ```
 ### When I set the placeholder {string} using the json path {jsonPath} from the last {method} to {resource}
 
