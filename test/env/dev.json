@@ -1,0 +1,8 @@
+{
+    "values": [
+        {
+            "key": "base",
+            "value": "http://localhost:3000"
+        }
+    ]
+}
