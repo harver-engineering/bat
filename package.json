@@ -1,12 +1,12 @@
 {
   "name": "bdd-api-tester",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Base for testing APIs with Cucumber",
   "main": "src/index.js",
   "scripts": {
     "prepublish": "jsdoc2md --partial jsdoc/scope.hbs --partial jsdoc/header.hbs --files src/steps.js> step-reference.md && jsdoc2md --files src/world.js> world-api.md",
     "start": "node test/server",
-    "cucumber" : "BASE_URL=http://localhost:3000 API_SPEC_FILE=test/openapi.yaml cucumber-js test",
+    "cucumber": "ENV_FILE=test/env/dev.json API_SPEC_FILE=test/openapi.yaml cucumber-js test",
     "test": "./run-tests.sh"
   },
   "repository": {
@@ -21,6 +21,7 @@
     "chai": "^4.2.0",
     "cookie": "^0.3.1",
     "jsonpath-plus": "^0.16.0",
+    "postman-collection": "^3.3.0",
     "superagent": "^4.0.0-beta.5",
     "swagger-parser": "^5.0.5"
   },

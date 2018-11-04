@@ -61,7 +61,38 @@ Scenario: Testing Gets
 
 ### 4. Run Cucumber with configuration using environment variables:
 
-`BASE_URL=http://localhost:3000 API_SPEC_FILE=test/openapi.yaml cucumber-js`
+#### Setting a base URL:
+
+Simple way to prefix all relative urls used in the tests:
+
+`BASE_URL=http://localhost:3000 cucumber-js`
+
+#### Provide an Open API 3 specification:
+
+`API_SPEC_FILE=test/openapi.yaml cucumber-js`
+
+#### Use a Postman compatible environment file to define variables:
+
+`ENV_FILE=env/uat.json cucumber-js`
+
+The env file will look like this:
+
+```json
+{
+    "values": [
+        {
+            "key": "base",
+            "value": "http://localhost:3000"
+        }
+    ]
+}
+```
+
+You may then reference this variables, in your steps, like so:
+
+```gerkhin
+When I send a 'GET' request to '{base}/pets'
+```
 
 ## Reference
 

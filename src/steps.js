@@ -4,9 +4,12 @@ const cookie = require('cookie');
 const JSONPath = require('jsonpath-plus');
 const { expect } = chai;
 const ajv = new Ajv();
-const fs = require('fs');
+const { readFile } = require('fs');
+const { join } = require('path');
+const { promisify } = require('util');
+const readFileAsync = promisify(readFile);
 
-const methodsWithBodies = [ 'POST', 'PUT', 'PATCH', 'DELETE'];
+const methodsWithBodies = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
 /** @module steps */
 
@@ -20,13 +23,28 @@ function registerSteps({ Given, When, Then }) {
     /**
      * ### Given I am anonymous
      * Explicitly state that the client is not authenticated
+     *
      * @example
      * Given I am anonymous
      *
      * @function anonymous
      */
-    Given('I am anonymous', function() {
+    Given('I am anonymous', function () {
         // nothing to do here
+    });
+
+    /**
+     * ### I am using the default content type: {string}
+     * Set a default Content-Type header for future requests. This is useful
+     * as a step in a feature's "Background"
+     *
+     * @example
+     * Given I am using the default content type: "application/json"
+     *
+     * @function defaultContentType
+     */
+    Given('I am using the default content type: {string}', function (contentType) {
+        this.defaultContentType = contentType;
     });
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,26 +62,26 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function makeRequest
      */
-    When('I send a {string} request to {string}', async function(method, path) {
+    When('I send a {string} request to {string}', function (method, path) {
         this.req = this.currentAgent[method.toLowerCase()](this.baseUrl + path);
 
-        if(methodsWithBodies.includes(method)) {
+        if (methodsWithBodies.includes(method)) {
             this.req.set('Content-Type', 'application/json');
         }
     });
 
     /**
-     * ### When I add the query string parameters
+     * ### When I add the query string parameters:
      * Add query string paramaters defined in a Gherkin data table
      *
      * @example
-     * When I add the query string parameters
+     * When I add the query string parameters:
      *  | sort   | desc |
      *  | filter | red  |
      *
      * @function addQueryString
      */
-    When('I add the query string parameters', function(qs) {
+    When('I add the query string parameters:', function (qs) {
         const queryObject = qs.rowsHash();
         // handle multi-value queryParameters
         for (const prop in queryObject) {
@@ -74,24 +92,45 @@ function registerSteps({ Given, When, Then }) {
         this.req.query(queryObject);
     });
 
+    // Shared code for sending request bodies
+    // Be sure to call in Cucumber's "World" context!
+    function addRequestBody(body, contentType = this.defaultContentType) {
+        if (['form', 'json'].includes(contentType.toLowerCase())) {
+            // super agent short forms
+            this.req.type(contentType);
+        } else {
+            this.req.set('Content-Type', contentType);
+        }
+
+        this.req.send(body);
+    }
+
     /**
      * ### When I add the request from json file
-     * Add a JSON request body included in the Gherkin doc strings to the json file 
+     * Add a JSON request body included in the Gherkin doc strings to the json file
      *
      * @example
      * When I add the request from json file
-     * |File_Name  | 
+     * |File_Name  |
      * |./test/files/json/sample-json|
      * @function addRequestBodyFromFile
      */
-    When('I add the request from json file',async function(body) {
-       // Read and send the json data
-       this.req.send(readJson(body.rows()[0][0]));
+    When('I add the request from json file {string}', async function (fileName) {
+        //Read the json data from the file location
+        const body = await readFileAsync(join(process.cwd(), fileName), 'utf8');
+
+        // Read and send the json data
+        this.req.send(body);
+        addRequestBody.call(this, body)
     });
 
     /**
      * ### When I add the request body
      * Add a JSON request body included in the Gherkin doc strings
+     * ### When I add the request body:
+     * Add a request body included in the Gherkin doc strings or data table.
+     * The content will be 'json' or that (if any) set by
+     * "Given I am using the default content type:"
      *
     * @example
      * When I add the request body
@@ -100,9 +139,33 @@ function registerSteps({ Given, When, Then }) {
      * """
      * @function addRequestBody
      */
-    When('I add the request body:', async function (body) {
-        // this doesn't actually send the request yet
-        this.req.send(body);
+    When('I add the request body:', function (body) {
+        addRequestBody.call(this, body)
+    });
+
+    /**
+     * ### When I add the request body:
+     * Add a request body included in the Gherkin doc strings or data table
+     * with a given content type
+     *
+     * The type "application/x-www-form-urlencoded" can be abbreviated to just "form"
+     *
+     * @example
+     * When I add the "form" request body
+     *  | Name | Value |
+     *  | name | Ka    |
+     *  | type | Snake |
+     *
+     * @function addRequestBodyWithContentType
+     */
+    When('I add the {string} request body:', function (contentType, body) {
+        // if body was a data table (and not a doc string)
+        if (body && typeof body.hashes === 'function') {
+            body = body.hashes().reduce((acc, pair) =>
+                Object.assign(acc, { [pair.Name]: pair.Value }), {});
+        }
+
+        addRequestBody.call(this, body, contentType);
     });
 
     /**
@@ -119,7 +182,6 @@ function registerSteps({ Given, When, Then }) {
         const spec = await this.getEndpointSpec();
         const body = spec.requestBody.content['application/json'].example;
 
-        // this doesn't actually send the request yet
         this.req.send(body);
     });
 
@@ -135,8 +197,8 @@ function registerSteps({ Given, When, Then }) {
      * @deprecated Use "When I set the request headers" instead
      * @function setRequestHeader
      */
-    When('I set the request header:', function(tableData) {
-        const { Name: name, Value: value } = tableData.rowsHash();
+    When('I set the request header:', function (tableData) {
+        let { Name: name, Value: value } = tableData.rowsHash();
         this.req.set(name, value);
     });
 
@@ -152,9 +214,9 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function setRequestHeaders
      */
-    When('I set the request headers:', function(tableData) {
+    When('I set the request headers:', function (tableData) {
         const headerItems = tableData.hashes();
-        for(const header of headerItems) {
+        for (const header of headerItems) {
             const { Name: name, Value: value } = header;
             this.req.set(name, value);
         }
@@ -173,7 +235,7 @@ function registerSteps({ Given, When, Then }) {
      * @deprecated Use "When I set the cookies:" instead.
      * @function setRequestCookie
      */
-    When('I set the cookie:', function(cookieData) {
+    When('I set the cookie:', function (cookieData) {
         const { Name: name, Value: value, Flags: flags } = cookieData.rowsHash();
         this.req.set('Cookie', `${name}=${value}${flags ? `;${flags}` : ''}`);
     });
@@ -189,9 +251,9 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function setRequestCookies
      */
-    When('I set the cookies:', function(tableData) {
+    When('I set the cookies:', function (tableData) {
         const cookies = tableData.hashes();
-        for(const cookie of cookies) {
+        for (const cookie of cookies) {
             const { Name: name, Value: value, Flags: flags } = cookie;
             this.req.set('Cookie', `${name}=${value}${flags ? `;${flags}` : ''}`);
         }
@@ -212,25 +274,15 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function populateRequestPathPlaceholder
      */
-    When('I set the placeholder {string} using the json path {string} from the last {string} to {string}', function(placeHolder, jsonPath, previousMethod, previousPath){
-        const previousResponse = this.retrieveResponse(previousPath, previousMethod);
+    When('I set the placeholder {string} using the json path {string} from the last {string} to {string}', function (placeHolder, jsonPath, previousMethod, previousPath) {
+        // FIXME: this is temp hack to workaround the variable placeholder in the url
+        const previousResponse = this.retrieveResponse('/' + previousPath.split('/')[1], previousMethod);
         const placeHolderValue = JSONPath.eval(previousResponse, jsonPath)[0];
-        const placeHolderRegex = new RegExp(`\{${placeHolder}\}`, 'g');
 
-        this.req.url = this.req.url.replace(placeHolderRegex, placeHolderValue);
-
-        // replace this placeholder in request body and query string
-        if(this.req._data) {
-            this.req._data = JSON.parse(
-                JSON.stringify(this.req._data).replace(placeHolderRegex, placeHolderValue)
-            );
-        }
-
-        if(this.req.qs) {
-            this.req.qs = JSON.parse(
-                JSON.stringify(this.req.qs).replace(placeHolderRegex, placeHolderValue)
-            );
-        }
+        this.responseVars.push({
+            key: placeHolder,
+            value: placeHolderValue,
+        });
     });
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -248,15 +300,16 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function receiveRequestWithStatus
      */
-    Then('I should receive a response with the status {int}', { timeout: 10 * 1000 }, async function(status) {
+    Then('I should receive a response with the status {int}', async function (status) {
         // this sends the request
         // (await will implictly call `then()` on the SuperAgent request object,
         // which will implicitly send the request)
         try {
+            this.req.use(this.replaceVariablesInitiator());
             const res = await this.req;
             this.saveCurrentResponse();
             expect(res.status).to.equal(status);
-        } catch(err) {
+        } catch (err) {
             if (err.status) {
                 expect(err.status).to.equal(status);
                 return;
@@ -275,9 +328,10 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function receiveWithinTime
      */
-    Then('I should receive a response within {int}ms', async function(expectedTime) {
+    Then('I should receive a response within {int}ms', async function (expectedTime) {
         // this Then should be called before all others!
         const startAt = process.hrtime();
+        this.req.use(this.replaceVariablesInitiator());
         await this.req;
         const diff = process.hrtime(startAt);
         const responseTime = diff[0] * 1e3 + diff[1] * 1e-6; // i took this from https://github.com/dbillingham/superagent-response-time
@@ -295,7 +349,7 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function responseBodyJsonPath
      */
-    Then('the response body json path at {string} should equal {string}', async function(path, value) {
+    Then('the response body json path at {string} should equal {string}', async function (path, value) {
         let body = null;
 
         try {
@@ -321,7 +375,7 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function setResponseCookie
      */
-    Then('I should receive a response that sets the cookie', async function(expectedCookieData) {
+    Then('I should receive a response that sets the cookie', async function (expectedCookieData) {
         const {
             Name: cookieName,
             Value: cookieValue,
@@ -331,25 +385,13 @@ function registerSteps({ Given, When, Then }) {
         const cookieStr = res.header['set-cookie'].find(cookieStr => cookieStr.startsWith(cookieName));
         const parsedCookie = cookie.parse(cookieStr);
 
-        if(cookieValue) {
+        if (cookieValue) {
             expect(cookieValue).to.be(parsedCookie[Name]);
         }
-        if(cookieValueLength) {
+        if (cookieValueLength) {
             expect(parsedCookie[cookieName].length).to.be(parseInt(cookieValueLength));
         }
     });
-
-    //Function to get the json file data to feature files
-    function readJson(fileName) {
-        try {
-            //Read the json data from the file location
-            const data = fs.readFileSync(fileName, 'utf8');
-            return data;
-        }
-        catch (err) {
-            throw new Error(err);
-        }
-    }
 
     // Function used for asserting a response validates against a given schema
     async function validateResponseAgainstSchema(schema) {
@@ -366,7 +408,7 @@ function registerSteps({ Given, When, Then }) {
 
         const valid = validate(body);
 
-        if (valid){
+        if (valid) {
             expect(valid).to.be.true;
         } else {
             expect.fail(null, null, JSON.stringify(validate.errors));
@@ -384,7 +426,7 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function validateAgainstSchema
      */
-    Then('the response body should validate against its response schema', async function() {
+    Then('the response body should validate against its response schema', async function () {
         const spec = await this.getEndpointSpec();
         const { schema } = spec.responses[200].content['application/json'];
         await validateResponseAgainstSchema.call(this, schema);
@@ -405,7 +447,7 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function validateAgainstInlineSchema
      */
-    Then('the response body should validate against the response schema:', async function(schema) {
+    Then('the response body should validate against the response schema:', async function (schema) {
         await validateResponseAgainstSchema.call(this, JSON.parse(schema));
     });
 }
