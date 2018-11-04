@@ -1,9 +1,11 @@
 
 * [steps](#module_steps)
     * [~anonymous()](#module_steps..anonymous)
+    * [~defaultContentType()](#module_steps..defaultContentType)
     * [~makeRequest()](#module_steps..makeRequest)
     * [~addQueryString()](#module_steps..addQueryString)
     * [~addRequestBody()](#module_steps..addRequestBody)
+    * [~addRequestBodyWithContentType()](#module_steps..addRequestBodyWithContentType)
     * [~addRequestBodyFromExample()](#module_steps..addRequestBodyFromExample)
     * ~~[~setRequestHeader()](#module_steps..setRequestHeader)~~
     * [~setRequestHeaders()](#module_steps..setRequestHeaders)
@@ -24,6 +26,14 @@ Explicitly state that the client is not authenticated
 ```js
 Given I am anonymous
 ```
+### I am using the default content type: {string}
+Set a default Content-Type header for future requests. This is useful
+as a step in a feature's "Background"
+
+**Example**  
+```js
+Given I am using the default content type: "application/json"
+```
 ### When I send a {method} request to {resource}
 Construct a request to a resource using an HTTP method
 Note: this should be the first "When"
@@ -32,17 +42,19 @@ Note: this should be the first "When"
 ```js
 When I send a 'GET' request to '/pets'
 ```
-### When I add the query string parameters
+### When I add the query string parameters:
 Add query string paramaters defined in a Gherkin data table
 
 **Example**  
 ```js
-When I add the query string parameters
+When I add the query string parameters:
  | sort   | desc |
  | filter | red  |
 ```
-### When I add the request body
-Add a JSON request body included in the Gherkin doc strings
+### When I add the request body:
+Add a request body included in the Gherkin doc strings or data table.
+The content will be 'json' or that (if any) set by
+"Given I am using the default content type:"
 
 **Example**  
 ```js
@@ -50,6 +62,19 @@ When I add the request body
  """
  { "name" : "Ka", "type" : "Snake" }
  """
+```
+### When I add the request body:
+Add a request body included in the Gherkin doc strings or data table
+with a given content type
+
+The type "application/x-www-form-urlencoded" can be abbreviated to just "form"
+
+**Example**  
+```js
+When I add the "form" request body
+ | Name | Value |
+ | name | Ka    |
+ | type | Snake |
 ```
 ### When I add the example request body
 Adds a request body extracted from the open api spec for this request's resource and method
