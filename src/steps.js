@@ -180,7 +180,6 @@ function registerSteps({ Given, When, Then }) {
      *
      * @example
      * When I add the "form" request body
-     *  | Name | Value |
      *  | name | Ka    |
      *  | type | Snake |
      *
@@ -188,10 +187,7 @@ function registerSteps({ Given, When, Then }) {
      */
     When('I add the {string} request body:', function (contentType, body) {
         // if body was a data table (and not a doc string)
-        if (body && typeof body.hashes === 'function') {
-            body = body.hashes().reduce((acc, pair) =>
-                Object.assign(acc, { [pair.Name]: pair.Value }), {});
-        }
+        body = typeof body.rowsHash === 'function' ? body.rowsHash() : body;
 
         addRequestBody.call(this, body, contentType);
     });
@@ -215,39 +211,17 @@ function registerSteps({ Given, When, Then }) {
 
     /**
      * ### When I set the request headers:
-     * Set multiple request headers in a single step
-     *
-     * @example
-     * When I set the request header:
-     *   | Name   | Accept-Language |
-     *   | Value  | en              |
-     *
-     * @deprecated Use "When I set the request headers" instead
-     * @function setRequestHeader
-     */
-    When('I set the request header:', function (tableData) {
-        let { Name: name, Value: value } = tableData.rowsHash();
-        this.req.set(name, value);
-    });
-
-    /**
-     * ### When I set the request headers:
      * Set one or more request headers in a single step
      *
      * @example
      * When I set the request headers:
-     *   | Name             | Value            |
      *   | Content-Type     | application/json |
      *   | Accept-Language  | en               |
      *
      * @function setRequestHeaders
      */
-    When('I set the request headers:', function (tableData) {
-        const headerItems = tableData.hashes();
-        for (const header of headerItems) {
-            const { Name: name, Value: value } = header;
-            this.req.set(name, value);
-        }
+    When(/^I set the request headers?:$/, function (tableData) {
+        this.req.set(tableData.rowsHash());
     });
 
     /**

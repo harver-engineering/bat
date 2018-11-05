@@ -7,7 +7,6 @@
     * [~addRequestBody()](#module_steps..addRequestBody)
     * [~addRequestBodyWithContentType()](#module_steps..addRequestBodyWithContentType)
     * [~addRequestBodyFromExample()](#module_steps..addRequestBodyFromExample)
-    * ~~[~setRequestHeader()](#module_steps..setRequestHeader)~~
     * [~setRequestHeaders()](#module_steps..setRequestHeaders)
     * ~~[~setRequestCookie()](#module_steps..setRequestCookie)~~
     * [~setRequestCookies()](#module_steps..setRequestCookies)
@@ -72,7 +71,6 @@ The type "application/x-www-form-urlencoded" can be abbreviated to just "form"
 **Example**  
 ```js
 When I add the "form" request body
- | Name | Value |
  | name | Ka    |
  | type | Snake |
 ```
@@ -84,24 +82,12 @@ See the [test openapi.yaml](../test/openapi.yaml) for an example.
 ```js
 When I add the example request body
 ```
-***Deprecated***
-
-### When I set the request headers:
-Set multiple request headers in a single step
-
-**Example**  
-```js
-When I set the request header:
-  | Name   | Accept-Language |
-  | Value  | en              |
-```
 ### When I set the request headers:
 Set one or more request headers in a single step
 
 **Example**  
 ```js
 When I set the request headers:
-  | Name             | Value            |
   | Content-Type     | application/json |
   | Accept-Language  | en               |
 ```

@@ -105,6 +105,12 @@ class World {
         }
     }
 
+    /**
+     * Replace placeholders in a value with variables currently stored from
+     * environemtn config and previous responses.
+     *
+     * @param {*} val
+     */
     replaceVars(val) {
         const vars = [].concat(this.responseVars).concat(this.envVars);
 

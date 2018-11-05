@@ -74,7 +74,6 @@ Feature: API Testing Steps
       | Name | Value | Flags  |
       | foo  | bar   | path=/ |
     And I set the request headers:
-      | Name            | Value            |
       | Accept-Language | nl               |
       | Content-Type    | application/json |
     And I should receive a response with the status 200
@@ -90,7 +89,6 @@ Feature: API Testing Steps
   Scenario: Testing urlencoded bodies
     When I send a 'POST' request to '{base}/pets/form'
     And I add the 'form' request body:
-      | Name | Value      |
       | name | Otis       |
       | type | Chimpanzee |
     Then I should receive a response with the status 201
