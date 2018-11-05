@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const { equal, deepEqual, AssertionError } = require('assert');
 
 const app = express();
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -80,6 +81,34 @@ app.put('/pets/:id', (req, res, next) => {
     }
 });
 
+const tokens = {
+    'jayani': 't1',
+    'hasini': 't2',
+    'gerald': 't3',
+}
+
+app.post('/auth/token', function (req, res) {
+    if (tokens[req.body.username]) {
+        return res.json({
+            accessToken: tokens[req.body.username],
+        })
+    } else {
+        res.status(401);
+        res.json({
+            msg: 'Access denied',
+        })
+    }
+});
+
+app.get('/secret/:username', function (req, res, next) {
+    try {
+        equal(`Bearer ${tokens[req.params.username]}`, req.get('Authorization'));
+        res.status(201);
+        res.send('OK');
+    } catch (err) {
+        next(err)
+    }
+});
 app.use((err, req, res, next) => {
     console.warn(err.message);
     res.status(err instanceof AssertionError ? 418 : (err.status || 500));

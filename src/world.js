@@ -29,6 +29,12 @@ class World {
         const envFile = process.env.ENV_FILE || null;
         this.envVars = envFile ? JSON.parse(readFileSync(resolve(process.cwd(), envFile))).values : [];
         this.responseVars = [];
+
+        // keep a set of sessions
+        this.oauth2 = {
+            token: null, // currently active access token
+            sessions: [], // a store of used credentials and their access tokens
+        }
     }
 
     /**
@@ -98,35 +104,34 @@ class World {
             return {};
         }
     }
+
+    replaceVars(val) {
+        const vars = [].concat(this.responseVars).concat(this.envVars);
+
+        if (!val || !vars.length) {
+            return val;
+        }
+
+        // cheeky way to easily replace on whole objects:
+        const placeHolders = vars.map(pair => pair.key).join('|');
+        const regex = new RegExp(`\{(${placeHolders})\}`, 'g');
+        return JSON.parse(JSON.stringify(val).replace(regex, (match, p1) => {
+            const matchPair = vars.find(pair => pair.key === p1);
+            return matchPair ? matchPair.value : match;
+        }));
+    }
+
     /**
      * Returns Super Agent middleware that replaces placeholders with
      * variables
      */
     replaceVariablesInitiator() {
-        function simpleReplace(val, regex, vars) {
-            if (!val) {
-                return val;
-            }
-
-            // cheeky way to easily replace on whole objects:
-            return JSON.parse(JSON.stringify(val).replace(regex, (match, p1) => {
-                const matchPair = vars.find(pair => pair.key === p1);
-                return matchPair ? matchPair.value : match;
-            }));
-        }
-
         return req => {
-            const vars = [].concat(this.responseVars).concat(this.envVars);
-            if (!vars.length) {
-                return req;
-            }
-            const placeHolders = vars.map(pair => pair.key).join('|');
-            const placeHolderRegex = new RegExp(`\{(${placeHolders})\}`, 'g');
-            req.url = simpleReplace(req.url, placeHolderRegex, vars);
-            req.qs = simpleReplace(req.qs, placeHolderRegex, vars);
-            req.headers = simpleReplace(req.headers, placeHolderRegex, vars);
-            req.cookies = simpleReplace(req.cookies, placeHolderRegex, vars);
-            req._data = simpleReplace(req._data, placeHolderRegex, vars);
+            req.url = this.replaceVars(req.url);
+            req.qs = this.replaceVars(req.qs);
+            req.headers = this.replaceVars(req.headers);
+            req.cookies = this.replaceVars(req.cookies);
+            req._data = this.replaceVars(req._data);
             return req;
         };
     }
@@ -155,9 +160,6 @@ class World {
      * @param {} res A Superagent response object
      */
     getResponseBody(res) {
-        if (res.header['content-type'] && res.header['content-type'].startsWith('text/html')) {
-            return JSON.parse(res.text);
-        }
         return res.body;
     }
 

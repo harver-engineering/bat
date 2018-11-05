@@ -4,6 +4,7 @@
 
 * [World](#module_World)
     * [~World](#module_World..World)
+        * [.baseUrl](#module_World..World+baseUrl)
         * [.req](#module_World..World+req)
         * [.req](#module_World..World+req)
         * [.currentAgent](#module_World..World+currentAgent)
@@ -24,6 +25,7 @@ State and stateful utilities can be shared between steps using an instance of "W
 **Kind**: inner class of [<code>World</code>](#module_World)  
 
 * [~World](#module_World..World)
+    * [.baseUrl](#module_World..World+baseUrl)
     * [.req](#module_World..World+req)
     * [.req](#module_World..World+req)
     * [.currentAgent](#module_World..World+currentAgent)
@@ -36,6 +38,12 @@ State and stateful utilities can be shared between steps using an instance of "W
     * [.saveCurrentResponse()](#module_World..World+saveCurrentResponse)
     * [.retrieveResponse(resource, method, status)](#module_World..World+retrieveResponse)
 
+<a name="module_World..World+baseUrl"></a>
+
+#### world.baseUrl
+Getter for the `baseUrl` used for all requests
+
+**Kind**: instance property of [<code>World</code>](#module_World..World)  
 <a name="module_World..World+req"></a>
 
 #### world.req

@@ -113,3 +113,16 @@ Feature: API Testing Steps
     Then I should receive a response with the status 200
     And the response body json path at "$.name" should equal "Felix"
 
+  @oauth
+  Scenario: Testing OAuth support
+    Given I obtain an access token from '{base}/auth/token' using the credentials:
+      | client_id | 123    |
+      | username  | jayani |
+    When I send a 'GET' request to '{base}/secret/jayani'
+    Then I should receive a response with the status 201
+
+    Given I obtain an access token from '{base}/auth/token' using the credentials:
+      | client_id | 123    |
+      | username  | gerald |
+    When I send a 'GET' request to '{base}/secret/gerald'
+    Then I should receive a response with the status 201

@@ -1,4 +1,5 @@
 const chai = require('chai');
+const request = require('superagent');
 const Ajv = require('ajv');
 const cookie = require('cookie');
 const JSONPath = require('jsonpath-plus');
@@ -26,7 +27,54 @@ function registerSteps({ Given, When, Then }) {
      * @function anonymous
      */
     Given('I am anonymous', function () {
-        // nothing to do here
+        // remove any active oauth2 token
+        this.oauth2.token = null;
+    });
+
+    /**
+     * ### Given I obtain an access token from {string} using the credentials:
+     * Supports logging into using OAuth2 credentials, typically with the passwrod scheme
+     * Sessions (access tokens) will be stored and supported for subsequent requests
+     *
+     * @example
+     * Given I obtain an access token from {string} using the credentials:
+     *  | client_id     | harver    |
+     *  | client_secret | harver123 |
+     *  | username      | gerald    |
+     *  | password      | foobar    |
+     *  | grant_type    | password  |
+     *
+     */
+    Given('I obtain an access token from {string} using the credentials:', async function (url, credentialsTable) {
+        const credentials = credentialsTable.rowsHash();
+        const session = this.oauth2.sessions.find(session =>
+            credentials.client_id === session.credentials.client_id &&
+            credentials.username === session.credentials.username
+        );
+
+        // TODO: check if token has expired
+        let token;
+        if (!session) {
+            const res = await request
+                .post(this.baseUrl + this.replaceVars(url))
+                .type('form')
+                .send(credentials);
+
+            if (res.body.accessToken) {
+                token = res.body.accessToken;
+                this.oauth2.sessions.push({
+                    credentials,
+                    token,
+                });
+            } else {
+                throw new Error(`Could not authenticate with OAuth2:\n\t${res.body}`);
+            }
+        } else {
+            token = session.token;
+        }
+
+        // set a current token
+        this.oauth2.token = token || null;
     });
 
     /**
@@ -58,8 +106,12 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function makeRequest
      */
-    When('I send a {string} request to {string}', function (method, path) {
-        this.req = this.currentAgent[method.toLowerCase()](this.baseUrl + path);
+    When('I send a {string} request to {string}', function (method, url) {
+        this.req = this.currentAgent[method.toLowerCase()](this.baseUrl + url);
+
+        if (this.oauth2.token) {
+            this.req.set('Authorization', `Bearer ${this.oauth2.token}`);
+        }
 
         if (methodsWithBodies.includes(method)) {
             this.req.set('Content-Type', 'application/json');
