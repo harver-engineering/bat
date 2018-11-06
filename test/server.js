@@ -74,7 +74,7 @@ app.put('/pets/:id', (req, res, next) => {
         } else {
             const err = new Error(`Pet not found with id: ${petId}`);
             err.status = 404;
-            next(err);
+            res.json({ msg: err.message });
         }
     } catch (err) {
         next(err);
@@ -110,9 +110,9 @@ app.get('/secret/:username', function (req, res, next) {
     }
 });
 app.use((err, req, res, next) => {
-    console.warn(err.message);
+    console.warn(`Assertion error: ${err.message}`);
     res.status(err instanceof AssertionError ? 418 : (err.status || 500));
-    res.send(err.message);
+    res.send({ message: err.message });
 })
 
 const port = 3000;

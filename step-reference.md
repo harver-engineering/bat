@@ -4,6 +4,7 @@
     * [~defaultContentType()](#module_steps..defaultContentType)
     * [~makeRequest()](#module_steps..makeRequest)
     * [~addQueryString()](#module_steps..addQueryString)
+    * [~addRequestBodyFromFile()](#module_steps..addRequestBodyFromFile)
     * [~addRequestBody()](#module_steps..addRequestBody)
     * [~addRequestBodyWithContentType()](#module_steps..addRequestBodyWithContentType)
     * [~addRequestBodyFromExample()](#module_steps..addRequestBodyFromExample)
@@ -50,6 +51,15 @@ When I add the query string parameters:
  | sort   | desc |
  | filter | red  |
 ```
+### I add the request from json file: {filePath}
+Add a JSON request body included in the Gherkin doc strings to the json file
+
+**Example**  
+```js
+I add the request from json file: '/test/files/json/sample-json'
+```
+### When I add the request body
+Add a JSON request body included in the Gherkin doc strings
 ### When I add the request body:
 Add a request body included in the Gherkin doc strings or data table.
 The content will be 'json' or that (if any) set by
@@ -58,9 +68,9 @@ The content will be 'json' or that (if any) set by
 **Example**  
 ```js
 When I add the request body
- """
- { "name" : "Ka", "type" : "Snake" }
- """
+"""
+{ "name" : "Ka", "type" : "Snake" }
+"""
 ```
 ### When I add the request body:
 Add a request body included in the Gherkin doc strings or data table

@@ -12,6 +12,9 @@
         * [.getEndpointSpec()](#module_World..World+getEndpointSpec)
         * [.replaceVars(val)](#module_World..World+replaceVars)
         * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
+        * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
+        * [.replaceVars(val)](#module_World..World+replaceVars)
+        * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
         * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
         * [.setAgentByRole(role, agent)](#module_World..World+setAgentByRole)
         * [.getResponseBody(res)](#module_World..World+getResponseBody)
@@ -32,6 +35,9 @@ State and stateful utilities can be shared between steps using an instance of "W
     * [.currentAgent](#module_World..World+currentAgent)
     * [.apiSpec](#module_World..World+apiSpec)
     * [.getEndpointSpec()](#module_World..World+getEndpointSpec)
+    * [.replaceVars(val)](#module_World..World+replaceVars)
+    * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
+    * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
     * [.replaceVars(val)](#module_World..World+replaceVars)
     * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
     * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
@@ -75,6 +81,32 @@ Getter for the full Open API spec
 
 #### world.getEndpointSpec()
 Get part of the Open API spec for just a single endpoint (resource + method)
+
+**Kind**: instance method of [<code>World</code>](#module_World..World)  
+<a name="module_World..World+replaceVars"></a>
+
+#### world.replaceVars(val)
+Replace placeholders in a value with variables currently stored from
+environemtn config and previous responses.
+
+**Kind**: instance method of [<code>World</code>](#module_World..World)  
+
+| Param | Type |
+| --- | --- |
+| val | <code>\*</code> | 
+
+<a name="module_World..World+replaceVariablesInitiator"></a>
+
+#### world.replaceVariablesInitiator()
+Returns Super Agent middleware that replaces placeholders with
+variables
+
+**Kind**: instance method of [<code>World</code>](#module_World..World)  
+<a name="module_World..World+replaceVariablesInitiator"></a>
+
+#### world.replaceVariablesInitiator()
+Returns Super Agent middleware that replaces placeholders with
+variables
 
 **Kind**: instance method of [<code>World</code>](#module_World..World)  
 <a name="module_World..World+replaceVars"></a>

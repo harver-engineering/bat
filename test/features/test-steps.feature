@@ -93,6 +93,11 @@ Feature: API Testing Steps
       | type | Chimpanzee |
     Then I should receive a response with the status 201
 
+  Scenario: Testing Posts using json file
+    When I send a 'POST' request to '{base}/pets'
+    And I add the request from json file: './test/files/json/sample-json.json'
+    Then I should receive a response with the status 201
+
   Scenario: Testing openapi spec intergration
     When I send a 'POST' request to '{base}/pets'
     And I add the query string parameters:
@@ -107,9 +112,14 @@ Feature: API Testing Steps
       """
     And I add the query string parameters:
       | id | {id} |
-    And I set the placeholder 'id' using the json path '$.[0].id' from the last 'GET' to '/pets'
+    And I set the placeholder 'id' using the json path '$.[0].id' from the last 'GET' to '{base}/pets'
     Then I should receive a response with the status 200
     And the response body json path at "$.name" should equal "Felix"
+
+  Scenario: Can Test status code 4**
+    When I send a 'PUT' request to '{base}/pets/5000'
+    Then I should receive a response with the status 418
+    And the response body json path at "$.message" should equal "'5000' == '1000'"
 
   @oauth
   Scenario: Testing OAuth support

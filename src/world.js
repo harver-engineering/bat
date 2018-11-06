@@ -143,6 +143,76 @@ class World {
     }
 
     /**
+     * Returns Super Agent middleware that replaces placeholders with
+     * variables
+     */
+    replaceVariablesInitiator() {
+        function simpleReplace(val, regex, vars) {
+            if (!val) {
+                return val;
+            }
+
+            // cheeky way to easily replace on whole objects:
+            return JSON.parse(JSON.stringify(val).replace(regex, (match, p1) => {
+                const matchPair = vars.find(pair => pair.key === p1);
+                return matchPair ? matchPair.value : match;
+            }));
+        }
+
+        return req => {
+            const vars = [].concat(this.responseVars).concat(this.envVars);
+            if (!vars.length) {
+                return req;
+            }
+            const placeHolders = vars.map(pair => pair.key).join('|');
+            const placeHolderRegex = new RegExp(`\{(${placeHolders})\}`, 'g');
+            req.url = simpleReplace(req.url, placeHolderRegex, vars);
+            req.qs = simpleReplace(req.qs, placeHolderRegex, vars);
+            req.headers = simpleReplace(req.headers, placeHolderRegex, vars);
+            req.cookies = simpleReplace(req.cookies, placeHolderRegex, vars);
+            req._data = simpleReplace(req._data, placeHolderRegex, vars);
+            return req;
+        };
+    }
+
+    /**
+     * Replace placeholders in a value with variables currently stored from
+     * environemtn config and previous responses.
+     *
+     * @param {*} val
+     */
+    replaceVars(val) {
+        const vars = [].concat(this.responseVars).concat(this.envVars);
+
+        if (!val || !vars.length) {
+            return val;
+        }
+
+        // cheeky way to easily replace on whole objects:
+        const placeHolders = vars.map(pair => pair.key).join('|');
+        const regex = new RegExp(`\{(${placeHolders})\}`, 'g');
+        return JSON.parse(JSON.stringify(val).replace(regex, (match, p1) => {
+            const matchPair = vars.find(pair => pair.key === p1);
+            return matchPair ? matchPair.value : match;
+        }));
+    }
+
+    /**
+     * Returns Super Agent middleware that replaces placeholders with
+     * variables
+     */
+    replaceVariablesInitiator() {
+        return req => {
+            req.url = this.replaceVars(req.url);
+            req.qs = this.replaceVars(req.qs);
+            req.headers = this.replaceVars(req.headers);
+            req.cookies = this.replaceVars(req.cookies);
+            req._data = this.replaceVars(req._data);
+            return req;
+        };
+    }
+
+    /**
      * Get a Superagent agent for a specific authorization role
      * @param {string} role The role, such as 'admin'
      */
@@ -176,7 +246,7 @@ class World {
         const res = await this.req;
         const { url, method } = this.req;
         const status = res.status.toString();
-        const cacheKey = getResponseCacheKey(parseUrl(url).pathname, method, status);
+        const cacheKey = getResponseCacheKey(url.split('?')[0], method, status);
         responseCache.set(cacheKey, this.getResponseBody(res));
     }
 

@@ -5,6 +5,10 @@ const cookie = require('cookie');
 const JSONPath = require('jsonpath-plus');
 const { expect } = chai;
 const ajv = new Ajv();
+const { readFile } = require('fs');
+const { join } = require('path');
+const { promisify } = require('util');
+const readFileAsync = promisify(readFile);
 
 const methodsWithBodies = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
@@ -112,7 +116,6 @@ function registerSteps({ Given, When, Then }) {
         if (this.oauth2.token) {
             this.req.set('Authorization', `Bearer ${this.oauth2.token}`);
         }
-
         if (methodsWithBodies.includes(method)) {
             this.req.set('Content-Type', 'application/json');
         }
@@ -154,17 +157,35 @@ function registerSteps({ Given, When, Then }) {
     }
 
     /**
+     * ### I add the request from json file: {filePath}
+     * Add a JSON request body included in the Gherkin doc strings to the json file
+     *
+     * @example
+     * I add the request from json file: '/test/files/json/sample-json'
+     *
+     * @function addRequestBodyFromFile
+     */
+    When('I add the request from json file: {string}', async function (fileName) {
+        //Read the json data from the file location
+        const body = await readFileAsync(join(process.cwd(), fileName), 'utf8');
+
+        // Read and send the json data
+        addRequestBody.call(this, body)
+    });
+
+    /**
+     * ### When I add the request body
+     * Add a JSON request body included in the Gherkin doc strings
      * ### When I add the request body:
      * Add a request body included in the Gherkin doc strings or data table.
      * The content will be 'json' or that (if any) set by
      * "Given I am using the default content type:"
      *
-     * @example
+    * @example
      * When I add the request body
-     *  """
-     *  { "name" : "Ka", "type" : "Snake" }
-     *  """
-     *
+     * """
+     * { "name" : "Ka", "type" : "Snake" }
+     * """
      * @function addRequestBody
      */
     When('I add the request body:', function (body) {
@@ -188,7 +209,6 @@ function registerSteps({ Given, When, Then }) {
     When('I add the {string} request body:', function (contentType, body) {
         // if body was a data table (and not a doc string)
         body = typeof body.rowsHash === 'function' ? body.rowsHash() : body;
-
         addRequestBody.call(this, body, contentType);
     });
 
@@ -277,7 +297,7 @@ function registerSteps({ Given, When, Then }) {
      * @function populateRequestPathPlaceholder
      */
     When('I set the placeholder {string} using the json path {string} from the last {string} to {string}', function (placeHolder, jsonPath, previousMethod, previousPath) {
-        const previousResponse = this.retrieveResponse(previousPath, previousMethod);
+        const previousResponse = this.retrieveResponse(this.replaceVars(previousPath), previousMethod);
         const placeHolderValue = JSONPath.eval(previousResponse, jsonPath)[0];
 
         this.responseVars.push({
@@ -305,10 +325,18 @@ function registerSteps({ Given, When, Then }) {
         // this sends the request
         // (await will implictly call `then()` on the SuperAgent request object,
         // which will implicitly send the request)
-        this.req.use(this.replaceVariablesInitiator());
-        const res = await this.req;
-        this.saveCurrentResponse();
-        expect(res.status).to.equal(status);
+        try {
+            this.req.use(this.replaceVariablesInitiator());
+            const res = await this.req;
+            this.saveCurrentResponse();
+            expect(res.status).to.equal(status);
+        } catch (err) {
+            if (err.status) {
+                expect(err.status).to.equal(status);
+                return;
+            }
+            throw new Error(err);
+        }
     });
 
     /**
@@ -343,8 +371,15 @@ function registerSteps({ Given, When, Then }) {
      * @function responseBodyJsonPath
      */
     Then('the response body json path at {string} should equal {string}', async function (path, value) {
-        const res = await this.req;
-        const body = this.getResponseBody(res);
+        let body = null;
+
+        try {
+            const res = await this.req;
+            body = this.getResponseBody(res);
+        } catch (err) {
+            body = err.response.body;
+        }
+
         const actualValue = JSONPath.eval(body, path)[0];
         expect(actualValue).to.equal(value);
     });
@@ -383,9 +418,15 @@ function registerSteps({ Given, When, Then }) {
     async function validateResponseAgainstSchema(schema) {
         const validate = ajv.compile(schema);
 
-        // get response and validate its body against the schema
-        const res = await this.req;
-        const body = this.getResponseBody(res);
+        let body = null;
+        try {
+            // get response and validate its body against the schema
+            const res = await this.req;
+            body = this.getResponseBody(res);
+        } catch (err) {
+            body = err.body;
+        }
+
         const valid = validate(body);
 
         if (valid) {
