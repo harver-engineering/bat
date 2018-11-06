@@ -95,6 +95,14 @@ Feature: API Testing Steps
       | type | Chimpanzee |
     Then I should receive a response with the status 201
 
+  Scenario: Testing urlencoded bodies
+    When I send a 'POST' request to '{base}/pets/form'
+    And I add the 'form' request body:
+      | Name | Value      |
+      | name | Otis       |
+      | type | Chimpanzee |
+    Then I should receive a response with the status 201
+
   # Scenario: Testing Posts using json file
   #   When I send a 'POST' request to '{base}/pets'
   #   And I add the request from json file './test/files/json/sample-json.json'

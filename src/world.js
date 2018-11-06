@@ -98,6 +98,38 @@ class World {
             return {};
         }
     }
+    /**
+     * Returns Super Agent middleware that replaces placeholders with
+     * variables
+     */
+    replaceVariablesInitiator() {
+        function simpleReplace(val, regex, vars) {
+            if (!val) {
+                return val;
+            }
+
+            // cheeky way to easily replace on whole objects:
+            return JSON.parse(JSON.stringify(val).replace(regex, (match, p1) => {
+                const matchPair = vars.find(pair => pair.key === p1);
+                return matchPair ? matchPair.value : match;
+            }));
+        }
+
+        return req => {
+            const vars = [].concat(this.responseVars).concat(this.envVars);
+            if (!vars.length) {
+                return req;
+            }
+            const placeHolders = vars.map(pair => pair.key).join('|');
+            const placeHolderRegex = new RegExp(`\{(${placeHolders})\}`, 'g');
+            req.url = simpleReplace(req.url, placeHolderRegex, vars);
+            req.qs = simpleReplace(req.qs, placeHolderRegex, vars);
+            req.headers = simpleReplace(req.headers, placeHolderRegex, vars);
+            req.cookies = simpleReplace(req.cookies, placeHolderRegex, vars);
+            req._data = simpleReplace(req._data, placeHolderRegex, vars);
+            return req;
+        };
+    }
 
 
     /**
