@@ -10,9 +10,7 @@
         * [.currentAgent](#module_World..World+currentAgent)
         * [.apiSpec](#module_World..World+apiSpec)
         * [.getEndpointSpec()](#module_World..World+getEndpointSpec)
-        * [.replaceVars(val)](#module_World..World+replaceVars)
-        * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
-        * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
+        * [.getOAuthAccessToken(url, credentials)](#module_World..World+getOAuthAccessToken)
         * [.replaceVars(val)](#module_World..World+replaceVars)
         * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
         * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
@@ -35,9 +33,7 @@ State and stateful utilities can be shared between steps using an instance of "W
     * [.currentAgent](#module_World..World+currentAgent)
     * [.apiSpec](#module_World..World+apiSpec)
     * [.getEndpointSpec()](#module_World..World+getEndpointSpec)
-    * [.replaceVars(val)](#module_World..World+replaceVars)
-    * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
-    * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
+    * [.getOAuthAccessToken(url, credentials)](#module_World..World+getOAuthAccessToken)
     * [.replaceVars(val)](#module_World..World+replaceVars)
     * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
     * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
@@ -83,32 +79,18 @@ Getter for the full Open API spec
 Get part of the Open API spec for just a single endpoint (resource + method)
 
 **Kind**: instance method of [<code>World</code>](#module_World..World)  
-<a name="module_World..World+replaceVars"></a>
+<a name="module_World..World+getOAuthAccessToken"></a>
 
-#### world.replaceVars(val)
-Replace placeholders in a value with variables currently stored from
-environemtn config and previous responses.
-
-**Kind**: instance method of [<code>World</code>](#module_World..World)  
-
-| Param | Type |
-| --- | --- |
-| val | <code>\*</code> | 
-
-<a name="module_World..World+replaceVariablesInitiator"></a>
-
-#### world.replaceVariablesInitiator()
-Returns Super Agent middleware that replaces placeholders with
-variables
+#### world.getOAuthAccessToken(url, credentials)
+Get an Oauth2 access token, by sending the credentials to the endpoint url
 
 **Kind**: instance method of [<code>World</code>](#module_World..World)  
-<a name="module_World..World+replaceVariablesInitiator"></a>
 
-#### world.replaceVariablesInitiator()
-Returns Super Agent middleware that replaces placeholders with
-variables
+| Param | Type | Description |
+| --- | --- | --- |
+| url | <code>\*</code> | The full token url () |
+| credentials | <code>\*</code> |  |
 
-**Kind**: instance method of [<code>World</code>](#module_World..World)  
 <a name="module_World..World+replaceVars"></a>
 
 #### world.replaceVars(val)

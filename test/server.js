@@ -27,7 +27,9 @@ app.get('/pets', (req, res, next) => {
         deepEqual(req.cookies, { foo: 'bar', path: '/' });
         equal(req.query.sort, 'desc');
         equal(req.query.filter, 'red');
+        equal(isNaN(parseInt(req.query.time)), false);
 
+        res.set('Content-Language', 'en');
         res.json(pets);
     } catch (err) {
         next(err);
@@ -104,7 +106,9 @@ app.get('/secret/:username', function (req, res, next) {
     try {
         equal(`Bearer ${tokens[req.params.username]}`, req.get('Authorization'));
         res.status(201);
-        res.send('OK');
+        res.send({
+            foo: 'bar',
+        });
     } catch (err) {
         next(err)
     }

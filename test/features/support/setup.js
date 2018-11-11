@@ -11,3 +11,8 @@ class World extends BaseWorld {
 setWorldConstructor(World);
 registerHooks({ After, AfterAll, Before, BeforeAll });
 registerSteps({ Given, Then, When });
+
+process.on('unhandledRejection', reason => {
+    console.error('\nThere was an unhandled rejection: "%s"', reason);
+    console.log(reason);
+});

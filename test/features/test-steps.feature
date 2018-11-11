@@ -5,26 +5,30 @@ Feature: API Testing Steps
 
   Background: Anonymous usage
     Given I am anonymous
+    Given I set the variables:
+      | color | red |
+      | lang  | nl  |
 
   Scenario: Testing Gets
-    When I send a 'GET' request to '{base}/pets'
+    When GET "{base}/pets"
     And I add the query string parameters:
-      | sort   | desc |
-      | filter | red  |
+      | sort   | desc        |
+      | filter | {color}     |
+      | time   | {timestamp} |
     And I set the cookie:
       | Name  | foo    |
       | Value | bar    |
       | Flags | path=/ |
     And I set the request header:
       | Name  | Accept-Language |
-      | Value | nl              |
+      | Value | {lang}          |
     And I set the request header:
       | Name  | Content-Type     |
       | Value | application/json |
-    Then I should receive a response within 1000ms
-    And I should receive a response with the status 200
-    And the response body should validate against its response schema
-    And the response body should validate against the response schema:
+    Then I should receive a response with the status 200
+    And I should receive a response within 1000ms
+    And the response body should validate against its schema
+    And the response body should validate against the schema:
       """
       {
       "type": "array",
@@ -64,12 +68,14 @@ Feature: API Testing Steps
       }
       """
     And the response body json path at "$.[1].name" should equal "Rover"
+    And the response header "Content-Language" should equal "en"
 
   Scenario: Testing Alternative Table Syntax for multiples
     When I send a 'GET' request to '{base}/pets'
     And I add the query string parameters:
-      | sort   | desc |
-      | filter | red  |
+      | sort   | desc        |
+      | filter | red         |
+      | time   | {timestamp} |
     And I set the cookies:
       | Name | Value | Flags  |
       | foo  | bar   | path=/ |
@@ -134,3 +140,4 @@ Feature: API Testing Steps
       | username  | gerald |
     When I send a 'GET' request to '{base}/secret/gerald'
     Then I should receive a response with the status 201
+    Then print the response body

@@ -19,8 +19,10 @@
   "dependencies": {
     "ajv": "^6.5.4",
     "chai": "^4.2.0",
+    "chalk": "^2.4.1",
     "cookie": "^0.3.1",
     "jsonpath-plus": "^0.16.0",
+    "openapi-schema-to-json-schema": "^2.2.0",
     "postman-collection": "^3.3.0",
     "superagent": "^4.0.0-beta.5",
     "swagger-parser": "^5.0.5"

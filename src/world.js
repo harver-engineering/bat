@@ -1,6 +1,7 @@
 const { readFileSync } = require('fs');
 const { isAbsolute, join, resolve } = require('path');
 const { parse: parseUrl } = require('url');
+const chalk = require('chalk');
 const request = require('superagent');
 const SwaggerParser = require('swagger-parser');
 
@@ -28,13 +29,9 @@ class World {
 
         const envFile = process.env.ENV_FILE || null;
         this.envVars = envFile ? JSON.parse(readFileSync(resolve(process.cwd(), envFile))).values : [];
+        this.env = process.env.TEST_ENV || null;
         this.responseVars = [];
-
-        // keep a set of sessions
-        this.oauth2 = {
-            token: null, // currently active access token
-            sessions: [], // a store of used credentials and their access tokens
-        }
+        this.userVars = [];
     }
 
     /**
@@ -85,16 +82,16 @@ class World {
      * Get part of the Open API spec for just a single endpoint (resource + method)
      */
     async getEndpointSpec() {
-        const { url, method } = this.req;
-        let { pathname } = parseUrl(url);
+        const { originalUrl, url, method } = this.req;
+        let { pathname } = parseUrl(originalUrl || url);
+        pathname = decodeURI(pathname);
 
-        // FIXME:
-        // if  variables have not been replaced yet in the url, parseurl will screw up
-        // and not parse the pathname correctly. E.g.
-        // "{base}/my-path" becomes "%7Bbase%7Dmy-path"
-        // This is a workaround for now:
+        // we want to keep variables in the pathname so they can be looked up,
+        // but need to remove the host name variable if any:
         if (!pathname.startsWith('/')) {
-            pathname = `/${pathname.split('/')[1]}`;
+            const tmpParts = pathname.split('/');
+            tmpParts.shift();
+            pathname = `/${tmpParts.join('/')}`.trim();
         }
 
         try {
@@ -106,15 +103,43 @@ class World {
     }
 
     /**
+     * Get an Oauth2 access token, by sending the credentials to the endpoint url
+     * @param {*} url The full token url ()
+     * @param {*} credentials
+     */
+    async getOAuthAccessToken(url, credentials) {
+        const agentKey = `${credentials.client_id}:${credentials.username}`;
+        let agent = this.getAgentByRole(agentKey);
+
+        // do an oauth2 login
+        if (!agent) {
+            const res = await request
+                .post(this.baseUrl + this.replaceVars(url))
+                .type('form')
+                .send(credentials);
+
+            if (res.body.accessToken) {
+                agent = request.agent();
+                agent.set('Authorization', `Bearer ${res.body.accessToken}`);
+            } else {
+                throw new Error(`Could not authenticate with OAuth2:\n\t${res.body}`);
+            }
+        }
+
+        // this also makes it the current agent
+        this.setAgentByRole(agentKey, agent);
+    }
+
+    /**
      * Replace placeholders in a value with variables currently stored from
      * environemtn config and previous responses.
      *
      * @param {*} val
      */
     replaceVars(val) {
-        const vars = [].concat(this.responseVars).concat(this.envVars);
+        const vars = [].concat(this.responseVars).concat(this.userVars).concat(this.envVars);
 
-        if (!val || !vars.length) {
+        if (!val) {
             return val;
         }
 
@@ -133,76 +158,7 @@ class World {
      */
     replaceVariablesInitiator() {
         return req => {
-            req.url = this.replaceVars(req.url);
-            req.qs = this.replaceVars(req.qs);
-            req.headers = this.replaceVars(req.headers);
-            req.cookies = this.replaceVars(req.cookies);
-            req._data = this.replaceVars(req._data);
-            return req;
-        };
-    }
-
-    /**
-     * Returns Super Agent middleware that replaces placeholders with
-     * variables
-     */
-    replaceVariablesInitiator() {
-        function simpleReplace(val, regex, vars) {
-            if (!val) {
-                return val;
-            }
-
-            // cheeky way to easily replace on whole objects:
-            return JSON.parse(JSON.stringify(val).replace(regex, (match, p1) => {
-                const matchPair = vars.find(pair => pair.key === p1);
-                return matchPair ? matchPair.value : match;
-            }));
-        }
-
-        return req => {
-            const vars = [].concat(this.responseVars).concat(this.envVars);
-            if (!vars.length) {
-                return req;
-            }
-            const placeHolders = vars.map(pair => pair.key).join('|');
-            const placeHolderRegex = new RegExp(`\{(${placeHolders})\}`, 'g');
-            req.url = simpleReplace(req.url, placeHolderRegex, vars);
-            req.qs = simpleReplace(req.qs, placeHolderRegex, vars);
-            req.headers = simpleReplace(req.headers, placeHolderRegex, vars);
-            req.cookies = simpleReplace(req.cookies, placeHolderRegex, vars);
-            req._data = simpleReplace(req._data, placeHolderRegex, vars);
-            return req;
-        };
-    }
-
-    /**
-     * Replace placeholders in a value with variables currently stored from
-     * environemtn config and previous responses.
-     *
-     * @param {*} val
-     */
-    replaceVars(val) {
-        const vars = [].concat(this.responseVars).concat(this.envVars);
-
-        if (!val || !vars.length) {
-            return val;
-        }
-
-        // cheeky way to easily replace on whole objects:
-        const placeHolders = vars.map(pair => pair.key).join('|');
-        const regex = new RegExp(`\{(${placeHolders})\}`, 'g');
-        return JSON.parse(JSON.stringify(val).replace(regex, (match, p1) => {
-            const matchPair = vars.find(pair => pair.key === p1);
-            return matchPair ? matchPair.value : match;
-        }));
-    }
-
-    /**
-     * Returns Super Agent middleware that replaces placeholders with
-     * variables
-     */
-    replaceVariablesInitiator() {
-        return req => {
+            req.originalUrl = req.url;
             req.url = this.replaceVars(req.url);
             req.qs = this.replaceVars(req.qs);
             req.headers = this.replaceVars(req.headers);
@@ -226,7 +182,7 @@ class World {
      * @param {*} agent
      */
     setAgentByRole(role, agent) {
-        this.currentAgent = agent;
+        this._currentAgent = agent;
         agents.set(role, agent);
     }
 
@@ -246,7 +202,7 @@ class World {
         const res = await this.req;
         const { url, method } = this.req;
         const status = res.status.toString();
-        const cacheKey = getResponseCacheKey(url.split('?')[0], method, status);
+        const cacheKey = getResponseCacheKey(url.split('?')[0], method, status)
         responseCache.set(cacheKey, this.getResponseBody(res));
     }
 
@@ -261,8 +217,46 @@ class World {
     }
 }
 
-function resetVars() {
+function reset() {
+    this.debug = [];
     this.responseVars = [];
+    this.userVars = [
+        {
+            key: 'timestamp',
+            value: Date.now(),
+        },
+        {
+            key: 'randomInt',
+            value: Math.round(Math.random() * 1000),
+        },
+    ];
+}
+
+async function printDebug(info) {
+    const sep = chalk.magenta.bold(new Array(80).fill('*').join(''));
+    if (this.debug.length) {
+        console.log('\n' + sep + '\n');
+        for (const line of this.debug) {
+            console.log(line);
+        }
+        console.log('\n' + sep + '\n');
+    }
+    if (info.result.status === 'failed') {
+        let res;
+        try {
+            res = await this.req;
+        } catch (err) {
+            res = err.response;
+        } finally {
+            console.log('\n' + sep + '\n');
+            console.log('Url:\n');
+            console.log(this.req.url);
+            console.log('\nResponse body:\n');
+            console.log(res.body);
+            console.log('\n' + sep + '\n');
+        }
+
+    }
 }
 
 async function loadApiSpec() {
@@ -272,6 +266,7 @@ async function loadApiSpec() {
         const specFilePath = isAbsolute(specFile) ? specFile : join(process.cwd(), specFile);
         try {
             apiSepc = await SwaggerParser.validate(specFilePath);
+            console.log(`API Spec loaded from: ${specFile}`);
         } catch (err) {
             console.warn(err.message);
         }
@@ -280,8 +275,9 @@ async function loadApiSpec() {
 
 module.exports = {
     World,
-    registerHooks: function ({ BeforeAll, Before }) {
+    registerHooks: function ({ BeforeAll, Before, After }) {
         BeforeAll(loadApiSpec);
-        Before(resetVars);
+        Before(reset);
+        After(printDebug);
     }
 }

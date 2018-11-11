@@ -1,10 +1,12 @@
 const chai = require('chai');
-const request = require('superagent');
 const Ajv = require('ajv');
 const cookie = require('cookie');
 const JSONPath = require('jsonpath-plus');
 const { expect } = chai;
-const ajv = new Ajv();
+//const ajv = new Ajv();
+const ajv = new Ajv({ schemaId: 'auto', unknownFormats: ['int32', 'int64', 'float'] });
+ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
+const toJsonSchema = require('openapi-schema-to-json-schema');
 const { readFile } = require('fs');
 const { join } = require('path');
 const { promisify } = require('util');
@@ -31,8 +33,7 @@ function registerSteps({ Given, When, Then }) {
      * @function anonymous
      */
     Given('I am anonymous', function () {
-        // remove any active oauth2 token
-        this.oauth2.token = null;
+        // nothing to do
     });
 
     /**
@@ -48,37 +49,32 @@ function registerSteps({ Given, When, Then }) {
      *  | password      | foobar    |
      *  | grant_type    | password  |
      *
+     * @function obtainAccessToken
      */
     Given('I obtain an access token from {string} using the credentials:', async function (url, credentialsTable) {
         const credentials = credentialsTable.rowsHash();
-        const session = this.oauth2.sessions.find(session =>
-            credentials.client_id === session.credentials.client_id &&
-            credentials.username === session.credentials.username
-        );
+        await this.getOAuthAccessToken(url, credentials);
+    });
 
-        // TODO: check if token has expired
-        let token;
-        if (!session) {
-            const res = await request
-                .post(this.baseUrl + this.replaceVars(url))
-                .type('form')
-                .send(credentials);
-
-            if (res.body.accessToken) {
-                token = res.body.accessToken;
-                this.oauth2.sessions.push({
-                    credentials,
-                    token,
-                });
-            } else {
-                throw new Error(`Could not authenticate with OAuth2:\n\t${res.body}`);
-            }
-        } else {
-            token = session.token;
-        }
-
-        // set a current token
-        this.oauth2.token = token || null;
+    /**
+     * ### Given I obtain an access token from {string} using the credentials:
+     * Supports logging into using OAuth2 credentials, typically with the password scheme
+     * Sessions (access tokens) will be stored and supported for subsequent requests
+     *
+     * @example
+     * Given I obtain an access token from '{base}/auth/token' using the credentials: '/path/to/user.json'
+     *
+     * @function obtainAccessTokenUsingFileCredentials
+     */
+    Given('I obtain an access token from {string} using credentials from: {string}', async function (url, filePath) {
+        const envFile = await readFileAsync(join(process.cwd(), filePath), 'utf8');
+        const keyFilter = ['client_id', 'client_secret', 'username', 'password', 'grant_type', 'refreshToken']
+        const credentials = JSON.parse(envFile).values.reduce((acc, item) => {
+            return item.enabled && item.value && keyFilter.includes(item.key) ?
+                Object.assign(acc, { [item.key]: item.value }) :
+                acc;
+        }, {});
+        await this.getOAuthAccessToken(url, credentials);
     });
 
     /**
@@ -95,10 +91,38 @@ function registerSteps({ Given, When, Then }) {
         this.defaultContentType = contentType;
     });
 
+    /**
+     * ### Given I set the variables:
+     * Explicitly state that the client is not authenticated
+     *
+     * @example
+     * Given I am anonymous
+     *
+     * @function setVariables
+     */
+    Given(/^I set the variables?:$/, function (varTable) {
+        const rows = varTable.rowsHash();
+        this.userVars = this.userVars.concat(Object.keys(rows).reduce((acc, curr) => {
+            return acc.concat([{
+                key: curr,
+                value: rows[curr],
+            }])
+        }, []));
+    });
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // When
     // Setup the request
     ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    function makeRequest(method, url) {
+        this.originalUrl = url;
+        this.req = this.currentAgent[method.toLowerCase()](this.baseUrl + url);
+
+        if (methodsWithBodies.includes(method)) {
+            this.req.set('Content-Type', 'application/json');
+        }
+    }
 
     /**
      * ### When I send a {method} request to {resource}
@@ -110,16 +134,9 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function makeRequest
      */
-    When('I send a {string} request to {string}', function (method, url) {
-        this.req = this.currentAgent[method.toLowerCase()](this.baseUrl + url);
+    When('I send a {string} request to {string}', makeRequest);
 
-        if (this.oauth2.token) {
-            this.req.set('Authorization', `Bearer ${this.oauth2.token}`);
-        }
-        if (methodsWithBodies.includes(method)) {
-            this.req.set('Content-Type', 'application/json');
-        }
-    });
+    When(/^(POST|GET|PUT|PATCH|DELETE|HEAD) "([^"]+)"$/, makeRequest);
 
     /**
      * ### When I add the query string parameters:
@@ -134,12 +151,6 @@ function registerSteps({ Given, When, Then }) {
      */
     When('I add the query string parameters:', function (qs) {
         const queryObject = qs.rowsHash();
-        // handle multi-value queryParameters
-        for (const prop in queryObject) {
-            if (queryObject[prop].includes(',')) {
-                queryObject[prop] = queryObject[prop].split(',');
-            }
-        }
         this.req.query(queryObject);
     });
 
@@ -157,31 +168,10 @@ function registerSteps({ Given, When, Then }) {
     }
 
     /**
-     * ### I add the request from json file: {filePath}
-     * Add a JSON request body included in the Gherkin doc strings to the json file
-     *
-     * @example
-     * I add the request from json file: '/test/files/json/sample-json'
-     *
-     * @function addRequestBodyFromFile
-     */
-    When('I add the request from json file: {string}', async function (fileName) {
-        //Read the json data from the file location
-        const body = await readFileAsync(join(process.cwd(), fileName), 'utf8');
-
-        // Read and send the json data
-        addRequestBody.call(this, body)
-    });
-
-    /**
      * ### When I add the request body
      * Add a JSON request body included in the Gherkin doc strings
-     * ### When I add the request body:
-     * Add a request body included in the Gherkin doc strings or data table.
-     * The content will be 'json' or that (if any) set by
-     * "Given I am using the default content type:"
      *
-    * @example
+     * @example
      * When I add the request body
      * """
      * { "name" : "Ka", "type" : "Snake" }
@@ -189,7 +179,7 @@ function registerSteps({ Given, When, Then }) {
      * @function addRequestBody
      */
     When('I add the request body:', function (body) {
-        addRequestBody.call(this, body)
+        addRequestBody.call(this, body);
     });
 
     /**
@@ -227,6 +217,23 @@ function registerSteps({ Given, When, Then }) {
         const body = spec.requestBody.content['application/json'].example;
 
         this.req.send(body);
+    });
+
+    /**
+     * ### When I add the request from json file: {filePath}
+     * Add a JSON request body included in the Gherkin doc strings to the json file
+     *
+     * @example
+     * I add the request from json file: '/test/files/json/sample-json'
+     *
+     * @function addRequestBodyFromFile
+     */
+    When('I add the request from json file: {string}', async function (fileName) {
+        //Read the json data from the file location
+        const body = await readFileAsync(join(process.cwd(), fileName), 'utf8');
+
+        // Read and send the json data
+        addRequestBody.call(this, body)
     });
 
     /**
@@ -325,6 +332,7 @@ function registerSteps({ Given, When, Then }) {
         // this sends the request
         // (await will implictly call `then()` on the SuperAgent request object,
         // which will implicitly send the request)
+        const startAt = process.hrtime();
         try {
             this.req.use(this.replaceVariablesInitiator());
             const res = await this.req;
@@ -333,16 +341,18 @@ function registerSteps({ Given, When, Then }) {
         } catch (err) {
             if (err.status) {
                 expect(err.status).to.equal(status);
-                return;
+            } else {
+                throw new Error(err);
             }
-            throw new Error(err);
+        } finally {
+            const diff = process.hrtime(startAt);
+            this.responseTime = diff[0] * 1e3 + diff[1] * 1e-6; // i took this from https://github.com/dbillingham/superagent-response-time
         }
     });
 
     /**
      * ### Then I should receive a response within {miliseconds}ms
      * Ensure the response was received within a time limit
-     * If using this step, it should be the first "Then"
      *
      * @example
      * Then I should receive a response within 500ms
@@ -350,14 +360,21 @@ function registerSteps({ Given, When, Then }) {
      * @function receiveWithinTime
      */
     Then('I should receive a response within {int}ms', async function (expectedTime) {
-        // this Then should be called before all others!
-        const startAt = process.hrtime();
-        this.req.use(this.replaceVariablesInitiator());
-        await this.req;
-        const diff = process.hrtime(startAt);
-        const responseTime = diff[0] * 1e3 + diff[1] * 1e-6; // i took this from https://github.com/dbillingham/superagent-response-time
+        expect(this.responseTime).to.be.below(expectedTime);
+    });
 
-        expect(responseTime).to.be.below(expectedTime);
+    /**
+     * ### Then the response header {string} should equal {string}
+     * Ensure a response header equals the expect value
+     *
+     * @example
+     * the response header "Content-Type" should equal "application/json"
+     *
+     * @function responseHeader
+     */
+    Then('the response header {string} should equal {string}', async function (headerName, value) {
+        const res = await this.req;
+        expect(res.header[headerName.toLowerCase()]).to.equal(this.replaceVars(value));
     });
 
     /**
@@ -381,7 +398,7 @@ function registerSteps({ Given, When, Then }) {
         }
 
         const actualValue = JSONPath.eval(body, path)[0];
-        expect(actualValue).to.equal(value);
+        expect(actualValue).to.equal(this.replaceVars(value));
     });
 
     /**
@@ -416,7 +433,7 @@ function registerSteps({ Given, When, Then }) {
 
     // Function used for asserting a response validates against a given schema
     async function validateResponseAgainstSchema(schema) {
-        const validate = ajv.compile(schema);
+        const validate = ajv.compile(toJsonSchema(schema));
 
         let body = null;
         try {
@@ -447,16 +464,16 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function validateAgainstSchema
      */
-    Then('the response body should validate against its response schema', async function () {
+    Then('the response body should validate against its schema', async function () {
         const spec = await this.getEndpointSpec();
-        const { schema } = spec.responses[200].content['application/json'];
+        const { schema } = spec.responses['200'].content['application/json'];
         await validateResponseAgainstSchema.call(this, schema);
     });
 
     /**
      * ### Then the response body should validate against its response schema
      *
-     * This allows to provide an inline response schema to validate the current
+     * This allows you to provide an inline response schema to validate the current
      * response body against. Generally not recommend because this can make the
      * feature file very verbose.
      *
@@ -468,8 +485,48 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function validateAgainstInlineSchema
      */
-    Then('the response body should validate against the response schema:', async function (schema) {
+    Then('the response body should validate against the schema:', async function (schema) {
         await validateResponseAgainstSchema.call(this, JSON.parse(schema));
+    });
+
+    /**
+     * ### Then the response body should validate against the schema from {string}
+     *
+     * This will load a response body json schemea from a file
+     *
+     * @example
+     * Then the response body should validate against the schema from './path/to/schema.json'
+     *
+     * @function validateAgainstFileSchema
+     */
+    Then('the response body should validate against the schema from {string}', async function (filePath) {
+        const schema = await readFileAsync(join(process.cwd(), this.replaceVars(filePath)), 'utf8');
+        await validateResponseAgainstSchema.call(this, JSON.parse(schema));
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Some debug helpers
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * ### Debug: Print the request
+     *
+     * @function printRequest
+     */
+    Then('print the request', async function () {
+        this.debug.push(`[debug] Showing request details for "${this.req.method}" to "${this.req.url}":\n`);
+        this.debug.push(JSON.stringify(this.req, null, '  '));
+    });
+
+    /**
+     * ### Debug: Print the response body
+     *
+     * @function printResponseBody
+     */
+    Then('print the response body', async function () {
+        const res = await this.req;
+        this.debug.push(`[debug] Showing response body for "${this.req.method}" to "${this.req.url}":\n`);
+        this.debug.push(JSON.stringify(res.body, null, '  '));
     });
 }
 
