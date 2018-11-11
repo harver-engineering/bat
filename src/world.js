@@ -1,5 +1,7 @@
-const { isAbsolute, join } = require('path');
+const { readFileSync } = require('fs');
+const { isAbsolute, join, resolve } = require('path');
 const { parse: parseUrl } = require('url');
+const chalk = require('chalk');
 const request = require('superagent');
 const SwaggerParser = require('swagger-parser');
 
@@ -15,11 +17,21 @@ let apiSepc = null;
  * State and stateful utilities can be shared between steps using an instance of "World"
  */
 class World {
-    constructor() {
+    constructor(...params) {
         this._req = null;
         this._currentAgent = null;
 
-        this._baseUrl = process.env.BASE_URL || null;
+        this.defaultContentType = 'application/json';
+
+        // Provide a base url for all relative paths.
+        // Using a variable: `{base}/foo` is preferred though
+        this._baseUrl = process.env.BASE_URL || '';
+
+        const envFile = process.env.ENV_FILE || null;
+        this.envVars = envFile ? JSON.parse(readFileSync(resolve(process.cwd(), envFile))).values : [];
+        this.env = process.env.TEST_ENV || null;
+        this.responseVars = [];
+        this.userVars = [];
     }
 
     /**
@@ -50,7 +62,7 @@ class World {
      * Reuse this agent in step definitions to preserve client sessions
      */
     get currentAgent() {
-        if(!this._currentAgent) {
+        if (!this._currentAgent) {
             this._currentAgent = request.agent();
         }
         return this._currentAgent;
@@ -60,7 +72,7 @@ class World {
      * Getter for the full Open API spec
      */
     get apiSpec() {
-        if(!apiSepc) {
+        if (!apiSepc) {
             throw new Error('No API spec is loaded. This assertion cannot be performed.')
         }
         return apiSepc;
@@ -70,15 +82,90 @@ class World {
      * Get part of the Open API spec for just a single endpoint (resource + method)
      */
     async getEndpointSpec() {
-        const { url, method } = this.req;
-        const { pathname } = parseUrl(url);
+        const { originalUrl, url, method } = this.req;
+        let { pathname } = parseUrl(originalUrl || url);
+        pathname = decodeURI(pathname);
+
+        // we want to keep variables in the pathname so they can be looked up,
+        // but need to remove the host name variable if any:
+        if (!pathname.startsWith('/')) {
+            const tmpParts = pathname.split('/');
+            tmpParts.shift();
+            pathname = `/${tmpParts.join('/')}`.trim();
+        }
 
         try {
             return this.apiSpec.paths[pathname][method.toLowerCase()];
-        } catch(err) {
+        } catch (err) {
             console.warn(err.message);
             return {};
         }
+    }
+
+    /**
+     * Get an Oauth2 access token, by sending the credentials to the endpoint url
+     * @param {*} url The full token url ()
+     * @param {*} credentials
+     */
+    async getOAuthAccessToken(url, credentials) {
+        const agentKey = `${credentials.client_id}:${credentials.username}`;
+        let agent = this.getAgentByRole(agentKey);
+
+        // do an oauth2 login
+        if (!agent) {
+            const res = await request
+                .post(this.baseUrl + this.replaceVars(url))
+                .type('form')
+                .send(credentials);
+
+            if (res.body.accessToken) {
+                agent = request.agent();
+                agent.set('Authorization', `Bearer ${res.body.accessToken}`);
+            } else {
+                throw new Error(`Could not authenticate with OAuth2:\n\t${res.body}`);
+            }
+        }
+
+        // this also makes it the current agent
+        this.setAgentByRole(agentKey, agent);
+    }
+
+    /**
+     * Replace placeholders in a value with variables currently stored from
+     * environemtn config and previous responses.
+     *
+     * @param {*} val
+     */
+    replaceVars(val) {
+        const vars = [].concat(this.responseVars).concat(this.userVars).concat(this.envVars);
+
+        if (!val) {
+            return val;
+        }
+
+        // cheeky way to easily replace on whole objects:
+        const placeHolders = vars.map(pair => pair.key).join('|');
+        const regex = new RegExp(`\{(${placeHolders})\}`, 'g');
+        return JSON.parse(JSON.stringify(val).replace(regex, (match, p1) => {
+            const matchPair = vars.find(pair => pair.key === p1);
+            return matchPair ? matchPair.value : match;
+        }));
+    }
+
+    /**
+     * Returns Super Agent middleware that replaces placeholders with
+     * variables
+     */
+    replaceVariablesInitiator() {
+        return req => {
+            req.originalUrl = req.url;
+            req.url = this.replaceVars(req.url);
+            req.qs = this.replaceVars(req.qs);
+            req.headers = this.replaceVars(req.headers);
+            req.cookies = this.replaceVars(req.cookies);
+            req._data = this.replaceVars(req._data);
+            return req;
+        };
     }
 
     /**
@@ -95,7 +182,7 @@ class World {
      * @param {*} agent
      */
     setAgentByRole(role, agent) {
-        this.currentAgent = agent;
+        this._currentAgent = agent;
         agents.set(role, agent);
     }
 
@@ -105,9 +192,6 @@ class World {
      * @param {} res A Superagent response object
      */
     getResponseBody(res) {
-        if(res.header['content-type'].startsWith('text/html')) {
-            return JSON.parse(res.text);
-        }
         return res.body;
     }
 
@@ -118,7 +202,7 @@ class World {
         const res = await this.req;
         const { url, method } = this.req;
         const status = res.status.toString();
-        const cacheKey = getResponseCacheKey(parseUrl(url).pathname, method, status);
+        const cacheKey = getResponseCacheKey(url.split('?')[0], method, status)
         responseCache.set(cacheKey, this.getResponseBody(res));
     }
 
@@ -133,22 +217,67 @@ class World {
     }
 }
 
+function reset() {
+    this.debug = [];
+    this.responseVars = [];
+    this.userVars = [
+        {
+            key: 'timestamp',
+            value: Date.now(),
+        },
+        {
+            key: 'randomInt',
+            value: Math.round(Math.random() * 1000),
+        },
+    ];
+}
+
+async function printDebug(info) {
+    const sep = chalk.magenta.bold(new Array(80).fill('*').join(''));
+    if (this.debug.length) {
+        console.log('\n' + sep + '\n');
+        for (const line of this.debug) {
+            console.log(line);
+        }
+        console.log('\n' + sep + '\n');
+    }
+    if (info.result.status === 'failed') {
+        let res;
+        try {
+            res = await this.req;
+        } catch (err) {
+            res = err.response;
+        } finally {
+            console.log('\n' + sep + '\n');
+            console.log('Url:\n');
+            console.log(this.req.url);
+            console.log('\nResponse body:\n');
+            console.log(res.body);
+            console.log('\n' + sep + '\n');
+        }
+
+    }
+}
+
 async function loadApiSpec() {
-  // load an open api spec
-  const specFile = process.env.API_SPEC_FILE || null;
-  if(specFile) {
-      const specFilePath = isAbsolute(specFile) ? specFile : join(process.cwd(), specFile);
-      try {
-          apiSepc = await SwaggerParser.validate(specFilePath);
-      } catch(err) {
-          console.warn(err.message);
-      }
-  }
+    // load an open api spec
+    const specFile = process.env.API_SPEC_FILE || null;
+    if (specFile) {
+        const specFilePath = isAbsolute(specFile) ? specFile : join(process.cwd(), specFile);
+        try {
+            apiSepc = await SwaggerParser.validate(specFilePath);
+            console.log(`API Spec loaded from: ${specFile}`);
+        } catch (err) {
+            console.warn(err.message);
+        }
+    }
 }
 
 module.exports = {
     World,
-    registerHooks: function({ BeforeAll }) {
-        BeforeAll(loadApiSpec)
+    registerHooks: function ({ BeforeAll, Before, After }) {
+        BeforeAll(loadApiSpec);
+        Before(reset);
+        After(printDebug);
     }
 }

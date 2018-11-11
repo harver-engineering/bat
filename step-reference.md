@@ -1,23 +1,68 @@
 
 * [steps](#module_steps)
     * [~anonymous()](#module_steps..anonymous)
+    * [~obtainAccessToken()](#module_steps..obtainAccessToken)
+    * [~obtainAccessTokenUsingFileCredentials()](#module_steps..obtainAccessTokenUsingFileCredentials)
+    * [~defaultContentType()](#module_steps..defaultContentType)
+    * [~setVariables()](#module_steps..setVariables)
     * [~makeRequest()](#module_steps..makeRequest)
     * [~addQueryString()](#module_steps..addQueryString)
     * [~addRequestBody()](#module_steps..addRequestBody)
+    * [~addRequestBodyWithContentType()](#module_steps..addRequestBodyWithContentType)
     * [~addRequestBodyFromExample()](#module_steps..addRequestBodyFromExample)
-    * ~~[~setRequestHeader()](#module_steps..setRequestHeader)~~
+    * [~addRequestBodyFromFile()](#module_steps..addRequestBodyFromFile)
     * [~setRequestHeaders()](#module_steps..setRequestHeaders)
     * ~~[~setRequestCookie()](#module_steps..setRequestCookie)~~
     * [~setRequestCookies()](#module_steps..setRequestCookies)
     * [~populateRequestPathPlaceholder()](#module_steps..populateRequestPathPlaceholder)
     * [~receiveRequestWithStatus()](#module_steps..receiveRequestWithStatus)
     * [~receiveWithinTime()](#module_steps..receiveWithinTime)
+    * [~responseHeader()](#module_steps..responseHeader)
     * [~responseBodyJsonPath()](#module_steps..responseBodyJsonPath)
     * [~setResponseCookie()](#module_steps..setResponseCookie)
     * [~validateAgainstSchema()](#module_steps..validateAgainstSchema)
     * [~validateAgainstInlineSchema()](#module_steps..validateAgainstInlineSchema)
+    * [~validateAgainstFileSchema()](#module_steps..validateAgainstFileSchema)
+    * [~printRequest()](#module_steps..printRequest)
+    * [~printResponseBody()](#module_steps..printResponseBody)
 
 ### Given I am anonymous
+Explicitly state that the client is not authenticated
+
+**Example**  
+```js
+Given I am anonymous
+```
+### Given I obtain an access token from {string} using the credentials:
+Supports logging into using OAuth2 credentials, typically with the passwrod scheme
+Sessions (access tokens) will be stored and supported for subsequent requests
+
+**Example**  
+```js
+Given I obtain an access token from {string} using the credentials:
+ | client_id     | harver    |
+ | client_secret | harver123 |
+ | username      | gerald    |
+ | password      | foobar    |
+ | grant_type    | password  |
+```
+### Given I obtain an access token from {string} using the credentials:
+Supports logging into using OAuth2 credentials, typically with the password scheme
+Sessions (access tokens) will be stored and supported for subsequent requests
+
+**Example**  
+```js
+Given I obtain an access token from '{base}/auth/token' using the credentials: '/path/to/user.json'
+```
+### I am using the default content type: {string}
+Set a default Content-Type header for future requests. This is useful
+as a step in a feature's "Background"
+
+**Example**  
+```js
+Given I am using the default content type: "application/json"
+```
+### Given I set the variables:
 Explicitly state that the client is not authenticated
 
 **Example**  
@@ -32,12 +77,12 @@ Note: this should be the first "When"
 ```js
 When I send a 'GET' request to '/pets'
 ```
-### When I add the query string parameters
+### When I add the query string parameters:
 Add query string paramaters defined in a Gherkin data table
 
 **Example**  
 ```js
-When I add the query string parameters
+When I add the query string parameters:
  | sort   | desc |
  | filter | red  |
 ```
@@ -47,9 +92,21 @@ Add a JSON request body included in the Gherkin doc strings
 **Example**  
 ```js
 When I add the request body
- """
- { "name" : "Ka", "type" : "Snake" }
- """
+"""
+{ "name" : "Ka", "type" : "Snake" }
+"""
+```
+### When I add the request body:
+Add a request body included in the Gherkin doc strings or data table
+with a given content type
+
+The type "application/x-www-form-urlencoded" can be abbreviated to just "form"
+
+**Example**  
+```js
+When I add the "form" request body
+ | name | Ka    |
+ | type | Snake |
 ```
 ### When I add the example request body
 Adds a request body extracted from the open api spec for this request's resource and method
@@ -59,27 +116,12 @@ See the [test openapi.yaml](../test/openapi.yaml) for an example.
 ```js
 When I add the example request body
 ```
-### When I add the request from json file
-Add the relative path of the json file to the read and post the json body     
+### When I add the request from json file: {filePath}
+Add a JSON request body included in the Gherkin doc strings to the json file
 
 **Example**  
 ```js
-And I add the request from json file
-  | File_Name                        |
-  |./test/files/json/sample-json.json|
-```
-### When I set the request header:
-Set a header on the request using a data table
-***Deprecated***
-
-### When I set the request headers:
-Set multiple request headers in a single step
-
-**Example**  
-```js
-When I set the request header:
-  | Name   | Accept-Language |
-  | Value  | en              |
+I add the request from json file: '/test/files/json/sample-json'
 ```
 ### When I set the request headers:
 Set one or more request headers in a single step
@@ -87,7 +129,6 @@ Set one or more request headers in a single step
 **Example**  
 ```js
 When I set the request headers:
-  | Name             | Value            |
   | Content-Type     | application/json |
   | Accept-Language  | en               |
 ```
@@ -135,11 +176,17 @@ Then I should receive a response with the status 200
 ```
 ### Then I should receive a response within {miliseconds}ms
 Ensure the response was received within a time limit
-If using this step, it should be the first "Then"
 
 **Example**  
 ```js
 Then I should receive a response within 500ms
+```
+### Then the response header {string} should equal {string}
+Ensure a response header equals the expect value
+
+**Example**  
+```js
+the response header "Content-Type" should equal "application/json"
 ```
 ### Then the response body json path at {jsonPath} should equal {expectedValue}
 Ensure a JSON response body contains a given value at the JSON path
@@ -170,7 +217,7 @@ Then the response body should validate against its response schema
 ```
 ### Then the response body should validate against its response schema
 
-This allows to provide an inline response schema to validate the current
+This allows you to provide an inline response schema to validate the current
 response body against. Generally not recommend because this can make the
 feature file very verbose.
 
@@ -181,3 +228,15 @@ Then the response body should validate against the response schema:
 { ... }
 """
 ```
+### Then the response body should validate against the schema from {string}
+
+This will load a response body json schemea from a file
+
+**Example**  
+```js
+Then the response body should validate against the schema from './path/to/schema.json'
+```
+### Debug: Print the request
+
+### Debug: Print the response body
+

@@ -5,114 +5,139 @@ Feature: API Testing Steps
 
   Background: Anonymous usage
     Given I am anonymous
+    Given I set the variables:
+      | color | red |
+      | lang  | nl  |
 
   Scenario: Testing Gets
-    When I send a 'GET' request to '/pets'
-    And I add the query string parameters
-      | sort   | desc |
-      | filter | red  |
+    When GET "{base}/pets"
+    And I add the query string parameters:
+      | sort   | desc        |
+      | filter | {color}     |
+      | time   | {timestamp} |
     And I set the cookie:
-      | Name | foo |
-      | Value | bar |
+      | Name  | foo    |
+      | Value | bar    |
       | Flags | path=/ |
     And I set the request header:
-      | Name   | Accept-Language |
-      | Value  | nl              |
+      | Name  | Accept-Language |
+      | Value | {lang}          |
     And I set the request header:
-      | Name   | Content-Type       |
-      | Value  | application/json   |
-    Then I should receive a response within 1000ms
-    And I should receive a response with the status 200
-    And the response body should validate against its response schema
-    And the response body should validate against the response schema:
-       """
-       {
-          "type": "array",
-          "items": {
-            "allOf": [
-              {
-                "required": [
-                  "name"
-                ],
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "tag": {
-                    "type": "string"
-                  }
-                }
-              },
-              {
-                "required": [
-                  "id"
-                ],
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string"
-                  }
-                }
-              }
-            ]
-          }
-        }
-       """
+      | Name  | Content-Type     |
+      | Value | application/json |
+    Then I should receive a response with the status 200
+    And I should receive a response within 1000ms
+    And the response body should validate against its schema
+    And the response body should validate against the schema:
+      """
+      {
+      "type": "array",
+      "items": {
+      "allOf": [
+      {
+      "required": [
+      "name"
+      ],
+      "properties": {
+      "name": {
+      "type": "string"
+      },
+      "tag": {
+      "type": "string"
+      }
+      }
+      },
+      {
+      "required": [
+      "id"
+      ],
+      "properties": {
+      "id": {
+      "type": "string"
+      },
+      "name": {
+      "type": "string"
+      },
+      "type": {
+      "type": "string"
+      }
+      }
+      }
+      ]
+      }
+      }
+      """
     And the response body json path at "$.[1].name" should equal "Rover"
+    And the response header "Content-Language" should equal "en"
 
   Scenario: Testing Alternative Table Syntax for multiples
-    When I send a 'GET' request to '/pets'
-    And I add the query string parameters
-      | sort   | desc |
-      | filter | red  |
+    When I send a 'GET' request to '{base}/pets'
+    And I add the query string parameters:
+      | sort   | desc        |
+      | filter | red         |
+      | time   | {timestamp} |
     And I set the cookies:
-      | Name | Value | Flags |
-      | foo | bar | path=/ |
+      | Name | Value | Flags  |
+      | foo  | bar   | path=/ |
     And I set the request headers:
-      | Name             | Value            |
-      | Accept-Language  | nl               |
-      | Content-Type     | application/json |
+      | Accept-Language | nl               |
+      | Content-Type    | application/json |
     And I should receive a response with the status 200
 
   Scenario: Testing Posts
-    When I send a 'POST' request to '/pets'
+    When I send a 'POST' request to '{base}/pets'
     And I add the request body:
-        """
-        { "name" : "Ka", "type" : "Snake" }
-        """
+      """
+      { "name" : "Ka", "type" : "Snake" }
+      """
+    Then I should receive a response with the status 201
+
+  Scenario: Testing urlencoded bodies
+    When I send a 'POST' request to '{base}/pets/form'
+    And I add the 'form' request body:
+      | name | Otis       |
+      | type | Chimpanzee |
     Then I should receive a response with the status 201
 
   Scenario: Testing Posts using json file
-    When I send a 'POST' request to '/pets'
-    And I add the request from json file
-      | File_Name                        |
-      |./test/files/json/sample-json.json|
-    Then I should receive a response with the status 200
+    When I send a 'POST' request to '{base}/pets'
+    And I add the request from json file: './test/files/json/sample-json.json'
+    Then I should receive a response with the status 201
 
   Scenario: Testing openapi spec intergration
-    When I send a 'POST' request to '/pets'
-    And I add the query string parameters
-        | useSpec   | true |
+    When I send a 'POST' request to '{base}/pets'
+    And I add the query string parameters:
+      | useSpec | true |
     And I add the example request body
 
   Scenario: Reuse previous values
-    When I send a 'PUT' request to '/pets/{id}'
+    When I send a 'PUT' request to '{base}/pets/{id}'
     And I add the request body:
-        """
-        { "id" : "{id}" }
-        """
-        And I add the query string parameters
-        | id   | {id} |
-    And I set the placeholder 'id' using the json path '$.[0].id' from the last 'GET' to '/pets'
+      """
+      { "id" : "{id}" }
+      """
+    And I add the query string parameters:
+      | id | {id} |
+    And I set the placeholder 'id' using the json path '$.[0].id' from the last 'GET' to '{base}/pets'
     Then I should receive a response with the status 200
     And the response body json path at "$.name" should equal "Felix"
 
   Scenario: Can Test status code 4**
-    When I send a 'PUT' request to '/pets/5000'
+    When I send a 'PUT' request to '{base}/pets/5000'
     Then I should receive a response with the status 418
     And the response body json path at "$.message" should equal "'5000' == '1000'"
+
+  @oauth
+  Scenario: Testing OAuth support
+    Given I obtain an access token from '{base}/auth/token' using the credentials:
+      | client_id | 123    |
+      | username  | jayani |
+    When I send a 'GET' request to '{base}/secret/jayani'
+    Then I should receive a response with the status 201
+
+    Given I obtain an access token from '{base}/auth/token' using the credentials:
+      | client_id | 123    |
+      | username  | gerald |
+    When I send a 'GET' request to '{base}/secret/gerald'
+    Then I should receive a response with the status 201
+    Then print the response body
