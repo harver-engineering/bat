@@ -51,11 +51,11 @@ Given('I am logged in', function() {
 ```gherkin
 Scenario: Testing Gets
     When I send a 'GET' request to '/pets'
-    And I add the query string parameters
+    And I add the query string parameters:
         | sort   | desc |
         | filter | red  |
-    Then I should receive a response within 1000ms
-    And I should receive a response with the status 200
+    Then I should receive a response with the status 200
+    And I should receive a response within 1000ms
     And the response body json path at "$.[1].name" should equal "Rover"
 ```
 
@@ -92,6 +92,24 @@ You may then reference this variables, in your steps, like so:
 
 ```gerkhin
 When I send a 'GET' request to '{base}/pets'
+```
+
+## Tips
+
+### Short forms
+
+Steps are written in a readable English form, but this can be quite verbose. Therefore
+most steps have alternative short form. For example:
+
+```gherkin
+Scenario: Testing short forms
+    When GET '/pets'
+    And qs:
+        | sort   | desc |
+        | filter | red  |
+    Then receive status 200
+    And within 1000ms
+    And json path at "$.[1].name" should equal "Rover"
 ```
 
 ## Reference
