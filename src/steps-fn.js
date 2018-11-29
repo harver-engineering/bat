@@ -44,7 +44,7 @@ function setVariables(varTable) {
 
 function makeRequest(method, url) {
     this.originalUrl = url;
-    this.req = this.currentAgent[method.toLowerCase()](this.baseUrl + url);
+    this.req = this.currentAgent[method.toLowerCase()](this.baseUrl + this.replaceVars(url));
 
     if (methodsWithBodies.includes(method)) {
         this.req.set('Content-Type', 'application/json');
