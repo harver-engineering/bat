@@ -17,8 +17,8 @@ Feature: API Testing Steps
       | filter | {color}     |
       | time   | {timestamp} |
     And I set the cookie:
-      | Name  | Value | Flags    |
-      | foo   | bar     | path=/ |
+      | Name | Value | Flags  |
+      | foo  | bar   | path=/ |
     And I set the request header:
       | Name  | Accept-Language |
       | Value | {lang}          |
@@ -132,6 +132,7 @@ Feature: API Testing Steps
     When I send a 'PUT' request to '{base}/pets/5000'
     Then I should receive a response with the status 418
     And the response body json path at "$.message" should equal "'5000' == '1000'"
+    Then print the response body
 
   @long
   @oauth

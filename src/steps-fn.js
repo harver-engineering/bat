@@ -130,7 +130,7 @@ async function receiveRequestWithStatus(status) {
         if (err.status) {
             expect(err.status).to.equal(status);
         } else {
-            throw new Error(err);
+            throw err;
         }
     } finally {
         const diff = process.hrtime(startAt);

@@ -311,7 +311,23 @@ Then the response body should validate against the schema from "./path/to/schema
 ```js
 Then validate against the schema from "./path/to/schema.json"
 ```
-### Debug: Print the request
+### Then print the request
 
-### Debug: Print the response body
+Debug step which prints the request that SuperAgent will send
 
+**Example**  
+```js
+Then print the request
+```
+### Then print the response body
+
+Debug step that will print the received response body.
+
+This must run after the `Then I should receive a response with the status <status>` step
+but will not run if that step fails to assert. So you might need to temporarily change
+this expectation in order to debug the response body received.
+
+**Example**  
+```js
+Then print the response body
+```

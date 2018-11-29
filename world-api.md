@@ -8,6 +8,7 @@
         * [.req](#module_World..World+req)
         * [.req](#module_World..World+req)
         * [.currentAgent](#module_World..World+currentAgent)
+        * [.currentAgent](#module_World..World+currentAgent)
         * [.apiSpec](#module_World..World+apiSpec)
         * [.getEndpointSpec()](#module_World..World+getEndpointSpec)
         * [.getOAuthAccessToken(url, credentials)](#module_World..World+getOAuthAccessToken)
@@ -30,6 +31,7 @@ State and stateful utilities can be shared between steps using an instance of "W
     * [.baseUrl](#module_World..World+baseUrl)
     * [.req](#module_World..World+req)
     * [.req](#module_World..World+req)
+    * [.currentAgent](#module_World..World+currentAgent)
     * [.currentAgent](#module_World..World+currentAgent)
     * [.apiSpec](#module_World..World+apiSpec)
     * [.getEndpointSpec()](#module_World..World+getEndpointSpec)
@@ -63,7 +65,14 @@ Setter for the active request
 <a name="module_World..World+currentAgent"></a>
 
 #### world.currentAgent
-Getter for the curren Superagent agent.
+Getter for the current Superagent agent.
+Reuse this agent in step definitions to preserve client sessions
+
+**Kind**: instance property of [<code>World</code>](#module_World..World)  
+<a name="module_World..World+currentAgent"></a>
+
+#### world.currentAgent
+Setter for the current Superagent agent.
 Reuse this agent in step definitions to preserve client sessions
 
 **Kind**: instance property of [<code>World</code>](#module_World..World)  

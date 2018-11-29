@@ -438,7 +438,12 @@ function registerSteps({ Given, When, Then }) {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * ### Debug: Print the request
+     * ### Then print the request
+     *
+     * Debug step which prints the request that SuperAgent will send
+     *
+     * @example
+     * Then print the request
      *
      * @function printRequest
      */
@@ -448,12 +453,30 @@ function registerSteps({ Given, When, Then }) {
     });
 
     /**
-     * ### Debug: Print the response body
+     * ### Then print the response body
+     *
+     * Debug step that will print the received response body.
+     *
+     * This must run after the `Then I should receive a response with the status <status>` step
+     * but will not run if that step fails to assert. So you might need to temporarily change
+     * this expectation in order to debug the response body received.
+     *
+     * @example
+     * Then print the response body
      *
      * @function printResponseBody
      */
     Then('print the response body', async function () {
-        const res = await this.req;
+        let res;
+        try {
+            res = await this.req;
+        } catch (err) {
+            if (!err.status) {
+                throw err;
+            }
+            res = err.response;
+        }
+
         this.debug.push(`[debug] Showing response body for "${this.req.method}" to "${this.req.url}":\n`);
         this.debug.push(JSON.stringify(res.body, null, '  '));
     });
