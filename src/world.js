@@ -58,7 +58,7 @@ class World {
     }
 
     /**
-     * Getter for the curren Superagent agent.
+     * Getter for the current Superagent agent.
      * Reuse this agent in step definitions to preserve client sessions
      */
     get currentAgent() {
@@ -66,6 +66,14 @@ class World {
             this._currentAgent = request.agent();
         }
         return this._currentAgent;
+    }
+
+    /**
+     * Setter for the current Superagent agent.
+     * Reuse this agent in step definitions to preserve client sessions
+     */
+    set currentAgent(agent) {
+        this._currentAgent = agent;
     }
 
     /**

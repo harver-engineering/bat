@@ -9,6 +9,7 @@ Feature: API Testing Steps
       | color | red |
       | lang  | nl  |
 
+  @long
   Scenario: Testing Gets
     When GET "{base}/pets"
     And I add the query string parameters:
@@ -16,9 +17,8 @@ Feature: API Testing Steps
       | filter | {color}     |
       | time   | {timestamp} |
     And I set the cookie:
-      | Name  | foo    |
-      | Value | bar    |
-      | Flags | path=/ |
+      | Name | Value | Flags  |
+      | foo  | bar   | path=/ |
     And I set the request header:
       | Name  | Accept-Language |
       | Value | {lang}          |
@@ -70,6 +70,7 @@ Feature: API Testing Steps
     And the response body json path at "$.[1].name" should equal "Rover"
     And the response header "Content-Language" should equal "en"
 
+  @long
   Scenario: Testing Alternative Table Syntax for multiples
     When I send a 'GET' request to '{base}/pets'
     And I add the query string parameters:
@@ -84,6 +85,7 @@ Feature: API Testing Steps
       | Content-Type    | application/json |
     And I should receive a response with the status 200
 
+  @long
   Scenario: Testing Posts
     When I send a 'POST' request to '{base}/pets'
     And I add the request body:
@@ -92,6 +94,7 @@ Feature: API Testing Steps
       """
     Then I should receive a response with the status 201
 
+  @long
   Scenario: Testing urlencoded bodies
     When I send a 'POST' request to '{base}/pets/form'
     And I add the 'form' request body:
@@ -99,17 +102,20 @@ Feature: API Testing Steps
       | type | Chimpanzee |
     Then I should receive a response with the status 201
 
+  @long
   Scenario: Testing Posts using json file
     When I send a 'POST' request to '{base}/pets'
-    And I add the request from json file: './test/files/json/sample-json.json'
+    And I add the request body from the file: './test/files/json/sample-json.json'
     Then I should receive a response with the status 201
 
+  @long
   Scenario: Testing openapi spec intergration
     When I send a 'POST' request to '{base}/pets'
     And I add the query string parameters:
       | useSpec | true |
     And I add the example request body
 
+  @long
   Scenario: Reuse previous values
     When I send a 'PUT' request to '{base}/pets/{id}'
     And I add the request body:
@@ -126,18 +132,14 @@ Feature: API Testing Steps
     When I send a 'PUT' request to '{base}/pets/5000'
     Then I should receive a response with the status 418
     And the response body json path at "$.message" should equal "'5000' == '1000'"
+    Then print the response body
 
+  @long
   @oauth
   Scenario: Testing OAuth support
     Given I obtain an access token from '{base}/auth/token' using the credentials:
       | client_id | 123    |
       | username  | jayani |
     When I send a 'GET' request to '{base}/secret/jayani'
-    Then I should receive a response with the status 201
-
-    Given I obtain an access token from '{base}/auth/token' using the credentials:
-      | client_id | 123    |
-      | username  | gerald |
-    When I send a 'GET' request to '{base}/secret/gerald'
     Then I should receive a response with the status 201
     Then print the response body
