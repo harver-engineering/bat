@@ -114,6 +114,6 @@ Scenario: Testing short forms
 
 ## Reference
 
-[Steps reference](./step-reference.md) for support writing feature files.
+[Steps reference](./docs/step-reference.md) for support writing feature files.
 
-[World API](./world-api.md) for support writing custom step definitions.
+[World API](./docs/world-api.md) for support writing custom step definitions.

@@ -4,7 +4,8 @@
   "description": "Base for testing APIs with Cucumber",
   "main": "src/index.js",
   "scripts": {
-    "prepublish": "jsdoc2md --partial jsdoc/scope.hbs --partial jsdoc/header.hbs --files src/steps.js> step-reference.md && jsdoc2md --files src/world.js> world-api.md",
+    "prepublish": "npm run docs",
+    "docs" : "jsdoc2md --partial docs/support/scope.hbs --partial docs/support/header.hbs --files src/steps.js> docs/step-reference.md && jsdoc2md --files src/world.js> docs/world-api.md",
     "start": "node test/server",
     "cucumber": "ENV_FILE=test/env/dev.json API_SPEC_FILE=test/openapi.yaml cucumber-js test",
     "test": "./run-tests.sh"
