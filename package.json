@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "prepublish": "npm run docs",
-    "docs" : "jsdoc2md --partial docs/support/scope.hbs --partial docs/support/header.hbs --files src/steps.js> docs/step-reference.md && jsdoc2md --files src/world.js> docs/world-api.md",
+    "docs": "jsdoc2md --partial docs/support/scope.hbs --partial docs/support/header.hbs --files src/steps.js> docs/step-reference.md && jsdoc2md --files src/world.js> docs/world-api.md",
     "start": "node test/server",
     "cucumber": "ENV_FILE=test/env/dev.json API_SPEC_FILE=test/openapi.yaml cucumber-js test",
     "test": "./run-tests.sh"
@@ -24,8 +24,7 @@
     "cookie": "^0.3.1",
     "jsonpath-plus": "^0.16.0",
     "openapi-schema-to-json-schema": "^2.2.0",
-    "postman-collection": "^3.3.0",
-    "superagent": "^4.0.0-beta.5",
+    "superagent": "^4.1.0",
     "swagger-parser": "^5.0.5"
   },
   "devDependencies": {
@@ -33,6 +32,7 @@
     "cookie-parser": "^1.4.3",
     "cucumber": "^5.0.1",
     "express": "^4.16.3",
+    "express-session": "^1.15.6",
     "jsdoc-to-markdown": "^4.0.1"
   },
   "peerDependencies": {
