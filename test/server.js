@@ -1,9 +1,15 @@
 const express = require('express');
+const session = require('express-session')
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { equal, deepEqual, AssertionError } = require('assert');
 
 const app = express();
+
+app.use(session({
+    secret: 'keyboard bat',
+    saveUninitialized: false,
+}));;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -113,6 +119,34 @@ app.get('/secret/:username', function (req, res, next) {
         next(err)
     }
 });
+
+app.post('/my-login', (req, res, next) => {
+    const userToRole = {
+        phil: 'admin',
+        gerald: 'user',
+    };
+    if(!req.session.loggedIn) {
+        // first login will set role
+        req.session.role = userToRole[req.body.username] || 'guest';
+    }
+    req.session.loggedIn = true;
+    res.status(204);
+    res.send();
+});
+
+app.get('/session/secret', function (req, res, next) {
+    const sessionSecrets = {
+        'admin' : 'pipistrelle',
+        'user' : 'barbastelle',
+    }
+    res.status(200);
+    res.send({
+        secret: sessionSecrets[req.session.role] || 'none',
+    })
+});
+
+
+
 app.use((err, req, res, next) => {
     console.warn(`Assertion error: ${err.message}`);
     res.status(err instanceof AssertionError ? 418 : (err.status || 500));

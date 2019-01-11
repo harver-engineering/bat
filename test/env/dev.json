@@ -3,6 +3,14 @@
         {
             "key": "base",
             "value": "http://localhost:3000"
+        },
+        {
+            "key": "admin_user",
+            "value": "phil"
+        },
+        {
+            "key": "user_user",
+            "value": "gerald"
         }
     ]
 }
