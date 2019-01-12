@@ -1,21 +1,47 @@
-# BDD (Cucumber) API Tester
+Bat 🦇 - Behavioral API Tester
+==============================
 
-A Gherkin DSL for testing REST APIs via Cucumber.JS.
+A [Gherkin](https://docs.cucumber.io/gherkin/) based DSL for testing HTTP APIs via [Cucumber.JS](https://github.com/cucumber/cucumber-js).
+
+* Write RESTful/HTTP API tests in plain English.
+* Integrates with Open API specs.
+* Easily extend with [Cucumber.JS](https://github.com/cucumber/cucumber-js).
+
+```gherkin
+    Given I am anonymous
+    When I send a 'GET' request to '{base}/pets'
+    And I add the query string parameters:
+        | sort   | desc   |
+        | filter | mammal |
+    Then I should receive a response with the status 200
+    And I should receive a response within 1000ms
+    And the response body json path at "$.[1].name" should equal "Rover"
+```
+
+See the [step definition reference](./docs/step-reference.md) for a complete
+list of all the available `Given`, `When` and `Then` steps.
+
+## Contents
+
+ * Install
+ * Get started
+ * Tips
+ * Extending
+ * Reference
 
 ## Install
 
 ```
-cd my-repo
-npm i --save-dev gti+ssh://git@bitbucket.org:harver/bdd-api-tester.git
+npm i --save-dev @harver/bat
 ```
 
-## Usage
+## Get started
 
-### 1. Install `cucumber`:
+### 1. Install Cucumber.JS:
 
 `npm install --save-dev cucumber`
 
-### 2. Create `features/support/setup.js` with the following code:
+### 2. Create the file `features/support/setup.js` with the following code:
 
 ```javascript
 const {
@@ -23,25 +49,13 @@ const {
     After, AfterAll, Before, BeforeAll,
     Given, When, Then
 } = require('cucumber');
-const { registerHooks, World: BaseWorld, registerSteps } = require('bdd-api-tester');
+const { registerHooks, World, registerSteps } = require('@harver/bat');
 
-// Create a custom world that extends the `BaseWorld`
-class World extends BaseWorld {
-    constructor() {
-        super();
-        // project specific world code would go here
-    }
-}
 setWorldConstructor(World);
 
-// register hooks and steps defined by the libary
+// Allow Bat to hook into your Cucumber dependencty:
 registerHooks({ Before, BeforeAll, After, AfterAll });
 registerSteps({ Given, Then, When });
-
-// project specific hooks and steps...
-Given('I am logged in', function() {
-    // do stuff to log in
-})
 ```
 
 ### 3. Write feature files and scenarios
@@ -50,7 +64,7 @@ Given('I am logged in', function() {
 
 ```gherkin
 Scenario: Testing Gets
-    When I send a 'GET' request to '/pets'
+    When I send a 'GET' request to '{base}/pets'
     And I add the query string parameters:
         | sort   | desc |
         | filter | red  |
@@ -59,19 +73,11 @@ Scenario: Testing Gets
     And the response body json path at "$.[1].name" should equal "Rover"
 ```
 
-### 4. Run Cucumber with configuration using environment variables:
+See the [Steps Reference](./docs/step-reference.md) for documentation on all available steps.
 
-#### Setting a base URL:
+## Tips
 
-Simple way to prefix all relative urls used in the tests:
-
-`BASE_URL=http://localhost:3000 cucumber-js`
-
-#### Provide an Open API 3 specification:
-
-`API_SPEC_FILE=test/openapi.yaml cucumber-js`
-
-#### Use a Postman compatible environment file to define variables:
+### Use a Postman compatible environment file to define variables:
 
 `ENV_FILE=env/uat.json cucumber-js`
 
@@ -94,23 +100,78 @@ You may then reference this variables, in your steps, like so:
 When I send a 'GET' request to '{base}/pets'
 ```
 
-## Tips
+### Integrate with an Open API 3 specification:
 
-### Short forms
+`API_SPEC_FILE=test/openapi.yaml cucumber-js`
 
-Steps are written in a readable English form, but this can be quite verbose. Therefore
-most steps have alternative short form. For example:
+An Open API spec can be used in conjunction with provided steps, such as
+extracting example request bodies or validating responses against their
+schemas.
+
+### Step short forms
+
+Steps are written in a readable English form, but this can seem quite verbose. Therefore most steps have alternative short form. For example:
 
 ```gherkin
 Scenario: Testing short forms
     When GET '/pets'
     And qs:
-        | sort   | desc |
-        | filter | red  |
+        | sort   | desc    |
+        | filter | mammal  |
     Then receive status 200
     And within 1000ms
     And json path at "$.[1].name" should equal "Rover"
 ```
+
+## Extending
+
+Under the hood, Bat uses [SuperAgent](https://visionmedia.github.io/superagent/) for making HTTP requests. You can get a new SuperAgent agent without requiring SuperAgent directly as a dependency by calling `this.newAgent()` within a custom
+step definition:
+
+```js
+const agent = this.newAgent();
+```
+
+Bat also maintains a cache of agents that persists across Cucumber scenarios. This
+means that if each scenario uses a `Given` step to set up some authorization, an HTTP session or Bearer token can be reused without needing to re-login every time.
+
+The code example below (taken from the tests), demonstrates a custom `Given` step
+for logging in and maintaining a client session:
+
+```gherkin
+const { setWorldConstructor, After, AfterAll, Before, BeforeAll, Given, When, Then } = require('cucumber');
+const { registerHooks, World, registerSteps } = require('@harver/bat');
+
+setWorldConstructor(World);
+registerHooks({ After, AfterAll, Before, BeforeAll });
+registerSteps({ Given, Then, When });
+
+// a custom login step
+Given('I am logged in as a {string}', async function(role) {
+    // does an agent for this role already exist?
+    const roleAgent = this.getAgentByRole(role);
+    if (roleAgent) {
+        this.setAgentByRole(role, roleAgent);
+        return;
+    }
+
+    // construct and send a login request
+    const agent = this.newAgent();
+    const req = agent.post(this.replaceVars('{base}/my-login'));
+
+    await req.send({
+        // this gets predefined credentials for this role from the `env/dev.json` file
+        username: this.replaceVars(`{${role}_user}`),
+    });
+
+    // this also sets `this.currentAgent` so this agent will be used
+    // for creating the next request.
+    this.setAgentByRole(role, agent);
+});
+```
+
+See the [Cucumber.JS](https://github.com/cucumber/cucumber-js/blob/master/docs/support_files/step_definitions.md) documentation for more information on writing step definitions.
+
 
 ## Reference
 

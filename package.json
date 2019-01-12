@@ -1,7 +1,7 @@
 {
-  "name": "bdd-api-tester",
+  "name": "@harver/bat",
   "version": "0.5.0",
-  "description": "Base for testing APIs with Cucumber",
+  "description": "A Gherkin based DSL for testing HTTP APIs via Cucumber.JS.",
   "main": "src/index.js",
   "scripts": {
     "prepublish": "npm run docs",
@@ -12,11 +12,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/harver/bdd-api-tester.git"
+    "url": "git@github.com:harver-bv/bat.git"
   },
   "author": "Phil Mander<philip@harver.com>",
-  "license": "ISC",
-  "homepage": "https://bitbucket.org/harver/bdd-api-tester#readme",
+  "license": "MIT",
+  "homepage": "https://github.com/harver-bv/bat",
   "dependencies": {
     "ajv": "^6.5.4",
     "chai": "^4.2.0",
