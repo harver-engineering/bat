@@ -14,6 +14,7 @@
         * [.getOAuthAccessToken(url, credentials)](#module_World..World+getOAuthAccessToken)
         * [.replaceVars(val)](#module_World..World+replaceVars)
         * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
+        * [.newAgent()](#module_World..World+newAgent)
         * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
         * [.setAgentByRole(role, agent)](#module_World..World+setAgentByRole)
         * [.getResponseBody(res)](#module_World..World+getResponseBody)
@@ -38,6 +39,7 @@ State and stateful utilities can be shared between steps using an instance of "W
     * [.getOAuthAccessToken(url, credentials)](#module_World..World+getOAuthAccessToken)
     * [.replaceVars(val)](#module_World..World+replaceVars)
     * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
+    * [.newAgent()](#module_World..World+newAgent)
     * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
     * [.setAgentByRole(role, agent)](#module_World..World+setAgentByRole)
     * [.getResponseBody(res)](#module_World..World+getResponseBody)
@@ -117,6 +119,12 @@ environemtn config and previous responses.
 #### world.replaceVariablesInitiator()
 Returns Super Agent middleware that replaces placeholders with
 variables
+
+**Kind**: instance method of [<code>World</code>](#module_World..World)  
+<a name="module_World..World+newAgent"></a>
+
+#### world.newAgent()
+Creates and gets a new superagent agent
 
 **Kind**: instance method of [<code>World</code>](#module_World..World)  
 <a name="module_World..World+getAgentByRole"></a>

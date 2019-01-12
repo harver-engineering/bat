@@ -63,7 +63,7 @@ class World {
      */
     get currentAgent() {
         if (!this._currentAgent) {
-            this._currentAgent = request.agent();
+            this._currentAgent = this.newAgent();
         }
         return this._currentAgent;
     }
@@ -174,6 +174,13 @@ class World {
             req._data = this.replaceVars(req._data);
             return req;
         };
+    }
+
+    /**
+     * Creates and gets a new superagent agent
+     */
+    newAgent() {
+        return request.agent();
     }
 
     /**
