@@ -321,6 +321,28 @@ function registerSteps({ Given, When, Then }) {
     Then('within {int}ms', fn.receiveWithinTime);
 
     /**
+     * ### Then I should receive the text
+     *
+     * @example
+     * Then I should receive the text:
+     * """
+     * The quick brown fox
+     * """
+     *
+     * @example <caption>Short form</caption>
+     * Then receive text:
+     * """
+     * The quick brown fox
+     * """
+     *
+     * @function receiveText
+     */
+    Then('I should receive the text:', fn.receiveText);
+
+    // short form
+    Then('receive text:', fn.receiveText);
+
+    /**
      * ### Then the response header {string} should equal {string}
      * Ensure a response header equals the expect value
      *

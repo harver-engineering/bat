@@ -206,19 +206,27 @@ class World {
      * JSON from JSON responses that have an incorrect 'text/html' content type.
      * @param {} res A Superagent response object
      */
-    getResponseBody(res) {
-        return res.body;
+    async getResponse() {
+        let res;
+
+        try {
+            res = await this.req;
+        } catch (err) {
+            res = err.response;
+        }
+
+        return res;
     }
 
     /**
      * Save the current response so its values can be used for future requests
      */
     async saveCurrentResponse() {
-        const res = await this.req;
+        const res = await this.getResponse();
         const { url, method } = this.req;
         const status = res.status.toString();
-        const cacheKey = getResponseCacheKey(url.split('?')[0], method, status)
-        responseCache.set(cacheKey, this.getResponseBody(res));
+        const cacheKey = getResponseCacheKey(url.split('?')[0], method, status);
+        responseCache.set(cacheKey, res.body);
     }
 
     /**

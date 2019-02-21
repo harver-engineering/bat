@@ -27,6 +27,10 @@ Feature: API Testing Steps
       | Value | application/json |
     Then I should receive a response with the status 200
     And I should receive a response within 1000ms
+    And I should receive the text:
+    """
+    [{"id":"1000","type":"cat","name":"Felix"},{"id":"2000","type":"dog","name":"Rover"}]
+    """
     And the response body should validate against its schema
     And the response body should validate against the schema:
       """

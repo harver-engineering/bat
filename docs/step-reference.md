@@ -16,6 +16,7 @@
     * [~populatePlaceholder()](#module_steps..populatePlaceholder)
     * [~receiveRequestWithStatus()](#module_steps..receiveRequestWithStatus)
     * [~receiveWithinTime()](#module_steps..receiveWithinTime)
+    * [~receiveText()](#module_steps..receiveText)
     * [~responseHeaderEquals()](#module_steps..responseHeaderEquals)
     * [~responseBodyJsonPathEquals()](#module_steps..responseBodyJsonPathEquals)
     * [~responseCookieEquals()](#module_steps..responseCookieEquals)
@@ -230,6 +231,22 @@ Then I should receive a response within 500ms
 **Example** *(Short form)*  
 ```js
 Then within 500ms
+```
+### Then I should receive the text
+
+**Example**  
+```js
+Then I should receive the text:
+"""
+The quick brown fox
+"""
+```
+**Example** *(Short form)*  
+```js
+Then receive text:
+"""
+The quick brown fox
+"""
 ```
 ### Then the response header {string} should equal {string}
 Ensure a response header equals the expect value

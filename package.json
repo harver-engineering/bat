@@ -1,6 +1,6 @@
 {
   "name": "@harver/bat",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A Gherkin based DSL for testing HTTP APIs via Cucumber.JS.",
   "main": "src/index.js",
   "scripts": {
