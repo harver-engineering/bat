@@ -17,7 +17,7 @@
         * [.newAgent()](#module_World..World+newAgent)
         * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
         * [.setAgentByRole(role, agent)](#module_World..World+setAgentByRole)
-        * [.getResponseBody(res)](#module_World..World+getResponseBody)
+        * [.getResponse(res)](#module_World..World+getResponse)
         * [.saveCurrentResponse()](#module_World..World+saveCurrentResponse)
         * [.retrieveResponse(resource, method, status)](#module_World..World+retrieveResponse)
 
@@ -42,7 +42,7 @@ State and stateful utilities can be shared between steps using an instance of "W
     * [.newAgent()](#module_World..World+newAgent)
     * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
     * [.setAgentByRole(role, agent)](#module_World..World+setAgentByRole)
-    * [.getResponseBody(res)](#module_World..World+getResponseBody)
+    * [.getResponse(res)](#module_World..World+getResponse)
     * [.saveCurrentResponse()](#module_World..World+saveCurrentResponse)
     * [.retrieveResponse(resource, method, status)](#module_World..World+retrieveResponse)
 
@@ -150,9 +150,9 @@ Save a Superagent agent for a given authorization role
 | role | <code>string</code> | 
 | agent | <code>\*</code> | 
 
-<a name="module_World..World+getResponseBody"></a>
+<a name="module_World..World+getResponse"></a>
 
-#### world.getResponseBody(res)
+#### world.getResponse(res)
 Gets the body from a response. Includes logic to parse
 JSON from JSON responses that have an incorrect 'text/html' content type.
 

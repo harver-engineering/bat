@@ -123,7 +123,7 @@ async function receiveRequestWithStatus(status) {
     const startAt = process.hrtime();
     try {
         this.req.use(this.replaceVariablesInitiator());
-        const res = await this.req;
+        const res = await this.getResponse();
         this.saveCurrentResponse();
         expect(res.status).to.equal(status);
     } catch (err) {
@@ -142,21 +142,19 @@ async function receiveWithinTime(expectedTime) {
     expect(this.responseTime).to.be.below(expectedTime);
 }
 
+async function receiveText(expectedText) {
+    const res = await this.getResponse();
+    const actualText = res.text.trim();
+    expect(actualText).to.equal(expectedText);
+}
+
 async function responseHeaderEquals(headerName, value) {
-    const res = await this.req;
+    const res = await this.getResponse();
     expect(res.header[headerName.toLowerCase()]).to.equal(this.replaceVars(value));
 }
 
 async function responseBodyJsonPathEquals(path, value) {
-    let body = null;
-
-    try {
-        const res = await this.req;
-        body = this.getResponseBody(res);
-    } catch (err) {
-        body = err.response.body;
-    }
-
+    const { body } = await this.getResponse();
     const actualValue = JSONPath.eval(body, path)[0];
     expect(actualValue).to.equal(this.replaceVars(value));
 }
@@ -165,7 +163,7 @@ async function responseCookieEquals(expectedCookieData) {
     const cookieData = expectedCookieData.hashes()[0];
     const { Name: cookieName, Value: cookieValue, ValueLength: cookieValueLength } = cookieData;
 
-    const res = await this.req;
+    const res = await this.getResponse();
     const cookieStr = res.header['set-cookie'].find(cookieStr => cookieStr.startsWith(cookieName));
     const parsedCookie = cookie.parse(cookieStr);
 
@@ -180,16 +178,7 @@ async function responseCookieEquals(expectedCookieData) {
 // Function used for asserting a response validates against a given schema
 async function _validateResponseAgainstSchema(schema) {
     const validate = ajv.compile(toJsonSchema(schema));
-
-    let body = null;
-    try {
-        // get response and validate its body against the schema
-        const res = await this.req;
-        body = this.getResponseBody(res);
-    } catch (err) {
-        body = err.body;
-    }
-
+    const { body } = await this.getResponse();
     const valid = validate(body);
 
     if (valid) {
@@ -230,6 +219,7 @@ module.exports = {
     populatePlaceholder,
     receiveRequestWithStatus,
     receiveWithinTime,
+    receiveText,
     responseHeaderEquals,
     responseBodyJsonPathEquals,
     responseCookieEquals,
