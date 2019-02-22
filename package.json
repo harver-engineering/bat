@@ -8,7 +8,14 @@
     "docs": "jsdoc2md --partial docs/support/scope.hbs --partial docs/support/header.hbs --files src/steps.js> docs/step-reference.md && jsdoc2md --files src/world.js> docs/world-api.md",
     "start": "node test/server",
     "cucumber": "LATENCY_BUFFER=1000 ENV_FILE=test/env/dev.json API_SPEC_FILE=test/openapi.yaml cucumber-js test",
-    "test": "./run-tests.sh"
+    "test": "./run-tests.sh",
+    "release": "standard-version"
+  },
+  "standard-version": {
+    "message": "chore: Release v%s",
+    "scripts": {
+      "posttag": "npm publish && git push --follow-tags"
+    }
   },
   "repository": {
     "type": "git",
@@ -33,7 +40,8 @@
     "cucumber": "^5.0.1",
     "express": "^4.16.3",
     "express-session": "^1.15.6",
-    "jsdoc-to-markdown": "^4.0.1"
+    "jsdoc-to-markdown": "^4.0.1",
+    "standard-version": "^5.0.0"
   },
   "peerDependencies": {
     "cucumber": "5.x"

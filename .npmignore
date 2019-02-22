@@ -1,0 +1,8 @@
+.git
+.editorconfig
+.gitignore
+.travis.yml
+test
+.DS_Store
+.eslintrc.js
+*.tgz
