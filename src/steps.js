@@ -11,7 +11,7 @@ function registerSteps({ Given, When, Then }) {
 
     /**
      * ### Given I am anonymous
-     * Explicitly state that the client is not authenticated
+     * Explicitly state that the client is not authenticated (doesn't actually do anything).
      *
      * @example
      * Given I am anonymous
@@ -24,8 +24,8 @@ function registerSteps({ Given, When, Then }) {
 
     /**
      * ### Given I obtain an access token from {string} using the credentials:
-     * Supports logging into using OAuth2 credentials, typically with the passwrod scheme
-     * Sessions (access tokens) will be stored and supported for subsequent requests
+     * Supports logging into using OAuth2 credentials, typically with the password scheme.
+     * Sessions (access tokens) will be stored and supported for subsequent requests.
      *
      * @example
      * Given I obtain an access token from "{base}/auth/token" using the credentials:
@@ -85,10 +85,13 @@ function registerSteps({ Given, When, Then }) {
 
     /**
      * ### Given I set the variables:
-     * Explicitly state that the client is not authenticated
+     * Set variable key/value pairs which will be automatically be substitued before
+     * sending requests.
      *
      * @example
-     * Given I am anonymous
+     * Given I set the variables:
+     * | base | https://petstore.com |
+     * | name | Fido                 |
      *
      * @function setVariables
      */
@@ -100,12 +103,12 @@ function registerSteps({ Given, When, Then }) {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * ### When I send a {method} request to {resource}
+     * ### When I send a {string} request to {string}
      * Construct a request to a resource using an HTTP method
      * Note: this should be the first "When"
      *
      * @example
-     * When I send a 'GET' request to "/pets"
+     * When I send a "GET" request to "/pets"
      *
      * @example <caption>Short form</caption>
      * When GET "/pets"
@@ -166,7 +169,7 @@ function registerSteps({ Given, When, Then }) {
      * Add a request body included in the Gherkin doc strings or data table
      * with a given content type
      *
-     * The type "application/x-www-form-urlencoded" can be abbreviated to just "form"
+     * The type "application/x-www-form-urlencoded" can be abbreviated to just "form".
      *
      * @example
      * When I add the "form" request body
@@ -174,7 +177,7 @@ function registerSteps({ Given, When, Then }) {
      *  | type | Snake |
      *
      * @example <caption>Short form</caption>
-     * When send "forn":
+     * When send "form":
      *  | name | Ka    |
      *  | type | Snake |
      *
@@ -187,7 +190,7 @@ function registerSteps({ Given, When, Then }) {
 
     /**
      * ### When I add the example request body
-     * Adds a request body extracted from the open api spec for this request's resource and method
+     * Adds a request body extracted from the open api spec for this request's resource and method.
      * See the [test openapi.yaml](../test/openapi.yaml) for an example.
      *
      * @example
@@ -204,7 +207,7 @@ function registerSteps({ Given, When, Then }) {
     When('send example body', fn.addRequestBodyFromExample);
 
     /**
-     * ### When I add the request body from the file: {filePath}
+     * ### When I add the request body from the file: {string}
      * Add a request body loaded from a file.
      *
      * @example
@@ -222,7 +225,7 @@ function registerSteps({ Given, When, Then }) {
 
     /**
      * ### When I set the request headers:
-     * Set one or more request headers in a single step
+     * Set one or more request headers in a single step.
      *
      * @example
      * When I set the request headers:
@@ -243,7 +246,7 @@ function registerSteps({ Given, When, Then }) {
 
     /**
      * ### When I set the cookies:
-     * Sets one or more cookies on the request using a data table
+     * Sets one or more cookies on the request using a data table.
      *
      * @example
      * When I set the cookies:
@@ -263,13 +266,13 @@ function registerSteps({ Given, When, Then }) {
     When(/^set cookies?:$/, fn.setRequestCookies);
 
     /**
-     * ### When I set the placeholder {string} using the json path {jsonPath} from the last {method} to {resource}
+     * ### When I set the placeholder {string} using the json path {string} from the last {string} to {string}
      *
      * Say, in a previous scenario, a 'GET' request was sent '/pets'. We can extract data from
      * this response and use it to populate placeholders in subsequent requests.
      *
-     * The example below will extract an id from a previously retrieved set of pets. And use it
-     * to populate the placeholder to get a specific pet resource
+     * The example below will extract an id from a previously retrieved set of pets and use it
+     * to populate the placeholder to get a specific pet resource:
      *
      * @example
      * When I send a 'GET' request to '/pets/{id}'
@@ -286,9 +289,9 @@ function registerSteps({ Given, When, Then }) {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * ### Then I should receive a response with the status {statusCode}
-     * Ensure the response was received with a given status
-     * This, generally, should be the first "Then"
+     * ### Then I should receive a response with the status {int}
+     * Ensure the response was received with a given status.
+     * This should always be the first "Then" assertion.
      *
      * @example
      * Then I should receive a response with the status 200
@@ -304,8 +307,9 @@ function registerSteps({ Given, When, Then }) {
     Then('receive status {int}', fn.receiveRequestWithStatus);
 
     /**
-     * ### Then I should receive a response within {miliseconds}ms
-     * Ensure the response was received within a time limit
+     * ### Then I should receive a response within {int}ms
+     * Ensure the response was received within a time limit. For slow netork connections
+     * use the LATENCY_BUFFER environment variable to increas this uniformly for all scenarios.
      *
      * @example
      * Then I should receive a response within 500ms
@@ -354,8 +358,8 @@ function registerSteps({ Given, When, Then }) {
     Then('the response header {string} should equal {string}', fn.responseHeaderEquals);
 
     /**
-     * ### Then the response body json path at {jsonPath} should equal {expectedValue}
-     * Ensure a JSON response body contains a given value at the JSON path
+     * ### Then the response body json path at {string} should equal {string}
+     * Ensure a JSON response body contains a given value at the JSON path.
      * See [http://goessner.net/articles/JsonPath/](http://goessner.net/articles/JsonPath/)
      *
      * @example
@@ -413,7 +417,7 @@ function registerSteps({ Given, When, Then }) {
     Then('validate against schema', fn.validateAgainstSpecSchema);
 
     /**
-     * ### Then the response body should validate against its response schema
+     * ### Then the response body should validate against the response schema:
      *
      * This allows you to provide an inline response schema to validate the current
      * response body against. Generally not recommend because this can make the

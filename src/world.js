@@ -185,7 +185,7 @@ class World {
     }
 
     /**
-     * Creates and gets a new superagent agent
+     * Creates and returns a new SuperAgent agent
      */
     newAgent() {
         return request.agent();
