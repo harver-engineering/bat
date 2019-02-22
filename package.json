@@ -1,13 +1,13 @@
 {
   "name": "@harver/bat",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "A Gherkin based DSL for testing HTTP APIs via Cucumber.JS.",
   "main": "src/index.js",
   "scripts": {
     "prepublish": "npm run docs",
     "docs": "jsdoc2md --partial docs/support/scope.hbs --partial docs/support/header.hbs --files src/steps.js> docs/step-reference.md && jsdoc2md --files src/world.js> docs/world-api.md",
     "start": "node test/server",
-    "cucumber": "ENV_FILE=test/env/dev.json API_SPEC_FILE=test/openapi.yaml cucumber-js test",
+    "cucumber": "LATENCY_BUFFER=1000 ENV_FILE=test/env/dev.json API_SPEC_FILE=test/openapi.yaml cucumber-js test",
     "test": "./run-tests.sh"
   },
   "repository": {

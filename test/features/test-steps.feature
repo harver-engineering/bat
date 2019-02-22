@@ -88,6 +88,8 @@ Feature: API Testing Steps
       | Accept-Language | nl               |
       | Content-Type    | application/json |
     And I should receive a response with the status 200
+    # LATENCY_BUFFER will ensure this passes
+    And I should receive a response within 1ms
 
   @long
   Scenario: Testing Posts

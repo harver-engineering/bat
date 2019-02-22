@@ -35,8 +35,11 @@ app.get('/pets', (req, res, next) => {
         equal(req.query.filter, 'red');
         equal(isNaN(parseInt(req.query.time)), false);
 
-        res.set('Content-Language', 'en');
-        res.json(pets);
+        // force a tiny bit of latency to test the LATENCY_BUFFER config
+        setTimeout(() => {
+            res.set('Content-Language', 'en');
+            res.json(pets);
+        }, 5);
     } catch (err) {
         next(err);
     }

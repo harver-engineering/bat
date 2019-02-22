@@ -26,6 +26,10 @@ class World {
         // Provide a base url for all relative paths.
         // Using a variable: `{base}/foo` is preferred though
         this._baseUrl = process.env.BASE_URL || '';
+        this._latencyBuffer = process.env.LATENCY_BUFFER ? parseInt(process.env.LATENCY_BUFFER, 10) : 0;
+        if(isNaN(this._latencyBuffer)) {
+            throw new Error(`process.env.LATENCY_BUFFER is not an integer (${process.env.LATENCY_BUFFER})`)
+        }
 
         const envFile = process.env.ENV_FILE || null;
         this.envVars = envFile ? JSON.parse(readFileSync(resolve(process.cwd(), envFile))).values : [];
@@ -86,6 +90,10 @@ class World {
         return apiSepc;
     }
 
+    get latencyBuffer() {
+        return this._latencyBuffer;
+    }
+
     /**
      * Get part of the Open API spec for just a single endpoint (resource + method)
      */
@@ -105,7 +113,7 @@ class World {
         try {
             return this.apiSpec.paths[pathname][method.toLowerCase()];
         } catch (err) {
-            console.warn(err.message);
+            console.warn(`Could not find "${method.toLowerCase()}:${pathname}" in the provided api spec (${err.message})`);
             return {};
         }
     }
@@ -166,7 +174,7 @@ class World {
      */
     replaceVariablesInitiator() {
         return req => {
-            req.originalUrl = req.url;
+            req.originalUrl = this.originalUrl || req.url;
             req.url = this.replaceVars(req.url);
             req.qs = this.replaceVars(req.qs);
             req.headers = this.replaceVars(req.headers);
@@ -177,7 +185,7 @@ class World {
     }
 
     /**
-     * Creates and gets a new superagent agent
+     * Creates and returns a new SuperAgent agent
      */
     newAgent() {
         return request.agent();

@@ -72,7 +72,7 @@ function _addRequestBody(body, contentType = this.defaultContentType) {
 function addRequestBodyWithContentType(contentType, body) {
     // if body was a data table (and not a doc string)
     body = typeof body.rowsHash === 'function' ? body.rowsHash() : body;
-    addRequestBody.call(this, body, contentType);
+    _addRequestBody.call(this, body, contentType);
 }
 
 function addRequestBody(body) {
@@ -84,7 +84,7 @@ async function addRequestBodyFromFile(fileName) {
     const body = await readFileAsync(join(process.cwd(), fileName), 'utf8');
 
     // Read and send the json data
-    addRequestBody.call(this, body)
+    _addRequestBody.call(this, body)
 }
 
 async function addRequestBodyFromExample() {
@@ -139,7 +139,7 @@ async function receiveRequestWithStatus(status) {
 }
 
 async function receiveWithinTime(expectedTime) {
-    expect(this.responseTime).to.be.below(expectedTime);
+    expect(this.responseTime).to.be.below(expectedTime + this.latencyBuffer);
 }
 
 async function receiveText(expectedText) {

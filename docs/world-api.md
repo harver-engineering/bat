@@ -124,7 +124,7 @@ variables
 <a name="module_World..World+newAgent"></a>
 
 #### world.newAgent()
-Creates and gets a new superagent agent
+Creates and returns a new SuperAgent agent
 
 **Kind**: instance method of [<code>World</code>](#module_World..World)  
 <a name="module_World..World+getAgentByRole"></a>
