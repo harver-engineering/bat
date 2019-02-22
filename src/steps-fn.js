@@ -139,7 +139,7 @@ async function receiveRequestWithStatus(status) {
 }
 
 async function receiveWithinTime(expectedTime) {
-    expect(this.responseTime).to.be.below(expectedTime);
+    expect(this.responseTime).to.be.below(expectedTime + this.latencyBuffer);
 }
 
 async function receiveText(expectedText) {

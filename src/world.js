@@ -26,6 +26,10 @@ class World {
         // Provide a base url for all relative paths.
         // Using a variable: `{base}/foo` is preferred though
         this._baseUrl = process.env.BASE_URL || '';
+        this._latencyBuffer = process.env.LATENCY_BUFFER ? parseInt(process.env.LATENCY_BUFFER, 10) : 0;
+        if(isNaN(this._latencyBuffer)) {
+            throw new Error(`process.env.LATENCY_BUFFER is not an integer (${process.env.LATENCY_BUFFER})`)
+        }
 
         const envFile = process.env.ENV_FILE || null;
         this.envVars = envFile ? JSON.parse(readFileSync(resolve(process.cwd(), envFile))).values : [];
@@ -84,6 +88,10 @@ class World {
             throw new Error('No API spec is loaded. This assertion cannot be performed.')
         }
         return apiSepc;
+    }
+
+    get latencyBuffer() {
+        return this._latencyBuffer;
     }
 
     /**

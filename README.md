@@ -123,6 +123,15 @@ Scenario: Testing short forms
     And json path at "$.[1].name" should equal "Rover"
 ```
 
+### Adding a latency buffer
+
+If you are using the `I should receive a response within {int}ms` step on a network connection you expect to be unusually slow,
+you can add pad the time of all these steps using the `LATENCY_BUFFER` environment variable:
+
+`LATENCY_BUFFER=1000 cucumber-js`
+
+This example allows an extra second for all requests to complete.
+
 ## Extending
 
 Under the hood, Bat uses [SuperAgent](https://visionmedia.github.io/superagent/) for making HTTP requests. You can get a new SuperAgent agent without requiring SuperAgent directly as a dependency by calling `this.newAgent()` within a custom
