@@ -105,7 +105,7 @@ class World {
         try {
             return this.apiSpec.paths[pathname][method.toLowerCase()];
         } catch (err) {
-            console.warn(err.message);
+            console.warn(`Could not find "${method.toLowerCase()}:${pathname}" in the provided api spec (${err.message})`);
             return {};
         }
     }
@@ -166,7 +166,7 @@ class World {
      */
     replaceVariablesInitiator() {
         return req => {
-            req.originalUrl = req.url;
+            req.originalUrl = this.originalUrl || req.url;
             req.url = this.replaceVars(req.url);
             req.qs = this.replaceVars(req.qs);
             req.headers = this.replaceVars(req.headers);
