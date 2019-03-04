@@ -159,6 +159,12 @@ async function responseBodyJsonPathEquals(path, value) {
     expect(actualValue).to.equal(this.replaceVars(value));
 }
 
+async function responseBodyJsonPathIsEmpty(path) {
+    const { body } = await this.getResponse();
+    const actualValue = JSONPath.eval(body, path)[0];
+    expect(actualValue).to.be.empty;
+}
+
 async function responseCookieEquals(expectedCookieData) {
     const cookieData = expectedCookieData.hashes()[0];
     const { Name: cookieName, Value: cookieValue, ValueLength: cookieValueLength } = cookieData;
@@ -222,6 +228,7 @@ module.exports = {
     receiveText,
     responseHeaderEquals,
     responseBodyJsonPathEquals,
+    responseBodyJsonPathIsEmpty,
     responseCookieEquals,
     validateAgainstSpecSchema,
     validateAgainstInlineSchema,

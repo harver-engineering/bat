@@ -105,6 +105,7 @@ Feature: API Testing Steps
       | name | Otis       |
       | type | Chimpanzee |
     Then receive status 201
+    And json path at "$" should be empty
 
   @short
   Scenario: Testing Posts using json file

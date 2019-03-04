@@ -19,6 +19,7 @@
     * [~receiveText()](#module_steps..receiveText)
     * [~responseHeaderEquals()](#module_steps..responseHeaderEquals)
     * [~responseBodyJsonPathEquals()](#module_steps..responseBodyJsonPathEquals)
+    * [~responseBodyJsonPathIsEmpty()](#module_steps..responseBodyJsonPathIsEmpty)
     * [~responseCookieEquals()](#module_steps..responseCookieEquals)
     * [~validateAgainstSpecSchema()](#module_steps..validateAgainstSpecSchema)
     * [~validateAgainstInlineSchema()](#module_steps..validateAgainstInlineSchema)
@@ -270,6 +271,15 @@ Then the response body json path at "$.[1].name" should equal "Rover"
 **Example** *(Short form)*  
 ```js
 Then json path at "$.[1].name" should equal "Rover"
+```
+### Then the response body json path at {string} should be empty
+Ensure the JSON path is empty.
+See [http://goessner.net/articles/JsonPath/](http://goessner.net/articles/JsonPath/)
+See [https://www.chaijs.com/api/bdd/#method_empty](https://www.chaijs.com/api/bdd/#method_empty)
+
+**Example**  
+```js
+Then the response body json path at "$.[1].name" should be empty
 ```
 ### Then I should receive a response that sets the cookie:
 
