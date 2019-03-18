@@ -107,6 +107,7 @@ Feature: API Testing Steps
       | name | Otis       |
       | type | Chimpanzee |
     Then I should receive a response with the status 201
+    And the response body json path at "$" should be empty
 
   @long
   Scenario: Testing Posts using json file

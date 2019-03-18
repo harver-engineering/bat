@@ -376,6 +376,22 @@ function registerSteps({ Given, When, Then }) {
     Then('json path at {string} should equal {string}', fn.responseBodyJsonPathEquals);
 
     /**
+     * ### Then the response body json path at {string} should be empty
+     * Ensure the JSON path is empty.
+     * See [http://goessner.net/articles/JsonPath/](http://goessner.net/articles/JsonPath/)
+     * See [https://www.chaijs.com/api/bdd/#method_empty](https://www.chaijs.com/api/bdd/#method_empty)
+     *
+     * @example
+     * Then the response body json path at "$.[1].name" should be empty
+     *
+     * @function responseBodyJsonPathIsEmpty
+     */
+    Then('the response body json path at {string} should be empty', fn.responseBodyJsonPathIsEmpty);
+
+    // short form
+    Then('json path at {string} should be empty', fn.responseBodyJsonPathIsEmpty);
+
+    /**
      * ### Then I should receive a response that sets the cookie:
      *
      * Asserts that a response sent a cookie to the client
