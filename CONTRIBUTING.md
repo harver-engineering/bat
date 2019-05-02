@@ -127,3 +127,8 @@ Run `npm run docs` to generate the markdown documentation as part of this change
 ### Commits
 
 Please use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0-beta.3/) and write a [good commit message](https://chris.beams.io/posts/git-commit/).
+
+### License
+
+Please ensure that all source files, existing and new, begin with the [Apache License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) boilerplate.
+
