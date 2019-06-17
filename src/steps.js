@@ -180,6 +180,41 @@ function registerSteps({ Given, When, Then }) {
     When(/^(POST|GET|PUT|PATCH|DELETE|HEAD) "([^"]+)"$/i, fn.makeRequest);
 
     /**
+     * ### When I send the GraphQL query:
+     * Construct a GraphQL query
+     *
+     * @example
+     * When I send the GraphQL query:
+     * """
+     * {
+     *   pets {
+     *      id
+     *      name
+     *      type
+     *   }
+     * }
+     * """
+     *
+     * @example <caption>Short form</caption>
+     * When GraphQL:
+     * """
+     * {
+     *   pets {
+     *      id
+     *      name
+     *      type
+     *   }
+     * }
+     * """
+     *
+     * @function makeGraphQLRequest
+     */
+    When('I send the GraphQL query:', fn.makeGraphQLRequest);
+
+    // short form
+    When('GraphQL:', fn.makeGraphQLRequest);
+
+    /**
      * ### When I add the query string parameters:
      * Add query string paramaters defined in a Gherkin data table
      *

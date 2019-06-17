@@ -178,3 +178,44 @@ Feature: API Testing Steps
     Given I am using basic authentication using credentials from: "./test/env/dev.json"
     When I send a 'GET' request to '{base}/basic/auth/test'
     Then I should receive a response with the status 200
+
+  @long
+  Scenario: Testing get all pets graphql query
+    When I send the GraphQL query:
+    """
+    {
+      pets {
+        id
+        name
+        type
+      }
+    }
+    """
+    Then receive status 200
+
+  @long
+  Scenario: Testing get single pet graphql query
+    When I send the GraphQL query:
+    """
+    {
+      pet (id:"1000") {
+        name
+        id
+      }
+    }
+    """
+    Then receive status 200
+    And json path at "$.data.pet.id" should equal "1000"
+
+  @long
+  Scenario: Testing add a new pet graphql mutation query
+    When I send the GraphQL query:
+    """
+    mutation {
+      addPet (id:"3000", name:"bird", type:"Canary") {
+        id
+      }
+    }
+    """
+    Then receive status 200
+    And json path at "$.data.addPet.id" should equal "3000"

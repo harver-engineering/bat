@@ -1,11 +1,14 @@
 
 * [steps](#module_steps)
     * [~anonymous()](#module_steps..anonymous)
+    * [~basicAuth()](#module_steps..basicAuth)
+    * [~basicAuthUsingFileCredentials()](#module_steps..basicAuthUsingFileCredentials)
     * [~obtainAccessToken()](#module_steps..obtainAccessToken)
     * [~obtainAccessTokenUsingFileCredentials()](#module_steps..obtainAccessTokenUsingFileCredentials)
     * [~defaultContentType()](#module_steps..defaultContentType)
     * [~setVariables()](#module_steps..setVariables)
     * [~makeRequest()](#module_steps..makeRequest)
+    * [~makeGraphQLRequest()](#module_steps..makeGraphQLRequest)
     * [~addQueryString()](#module_steps..addQueryString)
     * [~addRequestBody()](#module_steps..addRequestBody)
     * [~addRequestBodyWithContentType()](#module_steps..addRequestBodyWithContentType)
@@ -34,6 +37,33 @@ Explicitly state that the client is not authenticated (doesn't actually do anyth
 ```js
 Given I am anonymous
 ```
+### Given I am using basic authentication with the credentials:
+Sets a base 64 encoded basic authentication header that is used on subsequent requests.
+
+**Example**  
+```js
+Given I am using basic authentication with the credentials:
+  | username | <username> |
+  | password | <password> |
+```
+**Example** *(Short form)*  
+```js
+Given basic auth using:
+  | username | <username> |
+  | password | <password> |
+```
+### Given I am using basic authentication using credentials from: {string}
+Sets a base 64 encoded basic authentication header that is used on subsequent requests using
+credentials obtained from a Postman-like environment file.
+
+**Example**  
+```js
+Given I am using basic authentication using credentials from: "/path/to/user.json"
+```
+**Example** *(Short form)*  
+```js
+Given basic auth using credentials from: "/path/to/user.json"
+```
 ### Given I obtain an access token from {string} using the credentials:
 Supports logging into using OAuth2 credentials, typically with the password scheme.
 Sessions (access tokens) will be stored and supported for subsequent requests.
@@ -51,13 +81,13 @@ Given I obtain an access token from "{base}/auth/token" using the credentials:
 ```js
 Given get token from "{base}/auth/token" using:
 ```
-### Given I obtain an access token from {string} using the credentials:
+### Given I obtain an access token from {string} using the credentials from: {string}
 Supports logging into using OAuth2 credentials, typically with the password scheme
 Sessions (access tokens) will be stored and supported for subsequent requests
 
 **Example**  
 ```js
-Given I obtain an access token from "{base}/auth/token" using the credentials: "/path/to/user.json"
+Given I obtain an access token from "{base}/auth/token" using the credentials from: "/path/to/user.json"
 ```
 **Example** *(Short form)*  
 ```js
@@ -96,6 +126,35 @@ When I send a "GET" request to "/pets"
 **Example** *(Short form)*  
 ```js
 When GET "/pets"
+```
+### When I send the GraphQL query:
+Construct a GraphQL query
+
+**Example**  
+```js
+When I send the GraphQL query:
+"""
+{
+  pets {
+     id
+     name
+     type
+  }
+}
+"""
+```
+**Example** *(Short form)*  
+```js
+When GraphQL:
+"""
+{
+  pets {
+     id
+     name
+     type
+  }
+}
+"""
 ```
 ### When I add the query string parameters:
 Add query string paramaters defined in a Gherkin data table

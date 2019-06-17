@@ -41,6 +41,7 @@ class World {
         // Provide a base url for all relative paths.
         // Using a variable: `{base}/foo` is preferred though
         this._baseUrl = process.env.BASE_URL || '';
+        this._baseGraphQLUrl = process.env.GRAPHQL_BASE_URL || '';
         this._latencyBuffer = process.env.LATENCY_BUFFER ? parseInt(process.env.LATENCY_BUFFER, 10) : 0;
         if (isNaN(this._latencyBuffer)) {
             throw new Error(`process.env.LATENCY_BUFFER is not an integer (${process.env.LATENCY_BUFFER})`)
@@ -58,6 +59,13 @@ class World {
      */
     get baseUrl() {
         return this._baseUrl;
+    }
+
+    /**
+     * Getter for the `baseGraphQLUrl` used for all requests
+     */
+    get baseGraphQLUrl() {
+        return this._baseGraphQLUrl;
     }
 
     /**

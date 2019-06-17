@@ -5,18 +5,19 @@
 * [World](#module_World)
     * [~World](#module_World..World)
         * [.baseUrl](#module_World..World+baseUrl)
+        * [.baseGraphQLUrl](#module_World..World+baseGraphQLUrl)
         * [.req](#module_World..World+req)
         * [.req](#module_World..World+req)
-        * [.currentAgent](#module_World..World+currentAgent)
-        * [.currentAgent](#module_World..World+currentAgent)
         * [.apiSpec](#module_World..World+apiSpec)
+        * [.currentAgent](#module_World..World+currentAgent)
+        * [.currentAgent](#module_World..World+currentAgent)
+        * [.newAgent()](#module_World..World+newAgent)
+        * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
+        * [.setAgentByRole(role, agent)](#module_World..World+setAgentByRole)
         * [.getEndpointSpec()](#module_World..World+getEndpointSpec)
         * [.getOAuthAccessToken(url, credentials)](#module_World..World+getOAuthAccessToken)
         * [.replaceVars(val)](#module_World..World+replaceVars)
         * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
-        * [.newAgent()](#module_World..World+newAgent)
-        * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
-        * [.setAgentByRole(role, agent)](#module_World..World+setAgentByRole)
         * [.getResponse(res)](#module_World..World+getResponse)
         * [.saveCurrentResponse()](#module_World..World+saveCurrentResponse)
         * [.retrieveResponse(resource, method, status)](#module_World..World+retrieveResponse)
@@ -30,18 +31,19 @@ State and stateful utilities can be shared between steps using an instance of "W
 
 * [~World](#module_World..World)
     * [.baseUrl](#module_World..World+baseUrl)
+    * [.baseGraphQLUrl](#module_World..World+baseGraphQLUrl)
     * [.req](#module_World..World+req)
     * [.req](#module_World..World+req)
-    * [.currentAgent](#module_World..World+currentAgent)
-    * [.currentAgent](#module_World..World+currentAgent)
     * [.apiSpec](#module_World..World+apiSpec)
+    * [.currentAgent](#module_World..World+currentAgent)
+    * [.currentAgent](#module_World..World+currentAgent)
+    * [.newAgent()](#module_World..World+newAgent)
+    * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
+    * [.setAgentByRole(role, agent)](#module_World..World+setAgentByRole)
     * [.getEndpointSpec()](#module_World..World+getEndpointSpec)
     * [.getOAuthAccessToken(url, credentials)](#module_World..World+getOAuthAccessToken)
     * [.replaceVars(val)](#module_World..World+replaceVars)
     * [.replaceVariablesInitiator()](#module_World..World+replaceVariablesInitiator)
-    * [.newAgent()](#module_World..World+newAgent)
-    * [.getAgentByRole(role)](#module_World..World+getAgentByRole)
-    * [.setAgentByRole(role, agent)](#module_World..World+setAgentByRole)
     * [.getResponse(res)](#module_World..World+getResponse)
     * [.saveCurrentResponse()](#module_World..World+saveCurrentResponse)
     * [.retrieveResponse(resource, method, status)](#module_World..World+retrieveResponse)
@@ -50,6 +52,12 @@ State and stateful utilities can be shared between steps using an instance of "W
 
 #### world.baseUrl
 Getter for the `baseUrl` used for all requests
+
+**Kind**: instance property of [<code>World</code>](#module_World..World)  
+<a name="module_World..World+baseGraphQLUrl"></a>
+
+#### world.baseGraphQLUrl
+Getter for the `baseGraphQLUrl` used for all requests
 
 **Kind**: instance property of [<code>World</code>](#module_World..World)  
 <a name="module_World..World+req"></a>
@@ -62,6 +70,12 @@ Getter for the currently active Superagent request object
 
 #### world.req
 Setter for the active request
+
+**Kind**: instance property of [<code>World</code>](#module_World..World)  
+<a name="module_World..World+apiSpec"></a>
+
+#### world.apiSpec
+Getter for the full Open API spec
 
 **Kind**: instance property of [<code>World</code>](#module_World..World)  
 <a name="module_World..World+currentAgent"></a>
@@ -78,12 +92,35 @@ Setter for the current Superagent agent.
 Reuse this agent in step definitions to preserve client sessions
 
 **Kind**: instance property of [<code>World</code>](#module_World..World)  
-<a name="module_World..World+apiSpec"></a>
+<a name="module_World..World+newAgent"></a>
 
-#### world.apiSpec
-Getter for the full Open API spec
+#### world.newAgent()
+Creates and returns a new SuperAgent agent
 
-**Kind**: instance property of [<code>World</code>](#module_World..World)  
+**Kind**: instance method of [<code>World</code>](#module_World..World)  
+<a name="module_World..World+getAgentByRole"></a>
+
+#### world.getAgentByRole(role)
+Get a Superagent agent for a specific authorization role
+
+**Kind**: instance method of [<code>World</code>](#module_World..World)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| role | <code>string</code> | The role, such as 'admin' |
+
+<a name="module_World..World+setAgentByRole"></a>
+
+#### world.setAgentByRole(role, agent)
+Save a Superagent agent for a given authorization role
+
+**Kind**: instance method of [<code>World</code>](#module_World..World)  
+
+| Param | Type |
+| --- | --- |
+| role | <code>string</code> | 
+| agent | <code>\*</code> | 
+
 <a name="module_World..World+getEndpointSpec"></a>
 
 #### world.getEndpointSpec()
@@ -121,35 +158,6 @@ Returns Super Agent middleware that replaces placeholders with
 variables
 
 **Kind**: instance method of [<code>World</code>](#module_World..World)  
-<a name="module_World..World+newAgent"></a>
-
-#### world.newAgent()
-Creates and returns a new SuperAgent agent
-
-**Kind**: instance method of [<code>World</code>](#module_World..World)  
-<a name="module_World..World+getAgentByRole"></a>
-
-#### world.getAgentByRole(role)
-Get a Superagent agent for a specific authorization role
-
-**Kind**: instance method of [<code>World</code>](#module_World..World)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| role | <code>string</code> | The role, such as 'admin' |
-
-<a name="module_World..World+setAgentByRole"></a>
-
-#### world.setAgentByRole(role, agent)
-Save a Superagent agent for a given authorization role
-
-**Kind**: instance method of [<code>World</code>](#module_World..World)  
-
-| Param | Type |
-| --- | --- |
-| role | <code>string</code> | 
-| agent | <code>\*</code> | 
-
 <a name="module_World..World+getResponse"></a>
 
 #### world.getResponse(res)

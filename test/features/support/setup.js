@@ -25,6 +25,8 @@ setWorldConstructor(World);
 registerHooks({ After, AfterAll, Before, BeforeAll });
 registerSteps({ Given, Then, When });
 
+process.env.GRAPHQL_BASE_URL = 'http://localhost:3000/graphql';
+
 // a custom login step
 Given('I am logged in as a {string}', async function(role) {
     // does an agent for this role already exist?
