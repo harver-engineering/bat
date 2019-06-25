@@ -23,6 +23,8 @@ const agents = new Map();
 const responseCache = new Map();
 const getResponseCacheKey = (path, method, status) => `${path};${method};${status}`;
 
+const { version } = require('../package.json');
+
 let apiSepc = null;
 
 /** @module World */
@@ -82,6 +84,7 @@ class World {
     get currentAgent() {
         if (!this._currentAgent) {
             this._currentAgent = this.newAgent();
+            this._currentAgent.set('User-agent', `behavioral-api-tester/${version}`);
         }
         return this._currentAgent;
     }
@@ -149,7 +152,7 @@ class World {
                 .send(credentials);
 
             if (res.body.accessToken) {
-                agent = request.agent();
+                agent = this.newAgent();
                 agent.set('Authorization', `Bearer ${res.body.accessToken}`);
             } else {
                 throw new Error(`Could not authenticate with OAuth2:\n\t${res.body}`);
