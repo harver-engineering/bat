@@ -32,9 +32,17 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function anonymous
      */
-    Given('I am anonymous', function anonymous() {
-        // nothing to do
-    });
+    Given('I am anonymous', fn.noop);
+
+    Given(/^I am an? "([^"]*)"$/, fn.setCurrentAgentByRole);
+
+    Given('I am using basic authentication with the credentials:', fn.basicAuth);
+
+    Given('basic auth using:', fn.basicAuth);
+
+    Given('I am using basic authentication using credentials from: {string}', fn.basicAuthUsingFileCredentials);
+
+    Given('basic auth using credentials from: {string}', fn.basicAuthUsingFileCredentials);
 
     /**
      * ### Given I obtain an access token from {string} using the credentials:
@@ -65,7 +73,7 @@ function registerSteps({ Given, When, Then }) {
      * Sessions (access tokens) will be stored and supported for subsequent requests
      *
      * @example
-     * Given I obtain an access token from "{base}/auth/token" using the credentials: "/path/to/user.json"
+     * Given I obtain an access token from "{base}/auth/token" using the credentials from: "/path/to/user.json"
      *
      * @example <caption>Short form</caption>
      * Given get token from "{base}/auth/token" using credentials from: "/path/to/user.json"

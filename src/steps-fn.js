@@ -30,19 +30,42 @@ function defaultContentType(contentType) {
     this.defaultContentType = contentType;
 }
 
+async function filterValuesFromEnvFile(filePath, keyFilter) {
+    const envFile = await readFileAsync(join(process.cwd(), filePath), 'utf8');
+    return JSON.parse(envFile).values.reduce((acc, item) => {
+        return item.enabled && item.value && keyFilter.includes(item.key) ?
+            Object.assign(acc, { [item.key]: item.value }) :
+            acc;
+    }, {});
+}
+
+function setCurrentAgentByRole(role) {
+    if(this.getAgentByRole(role)) {
+        this.currentAgent = this.getAgentByRole(role);
+    } else {
+        this.setAgentByRole(role, this.newAgent());
+    }
+}
+
+async function basicAuth(credentialsTable) {
+    const credentials = credentialsTable.rowsHash();
+    this.setBasicAuth(credentials);
+}
+
+async function basicAuthUsingFileCredentials(filePath) {
+    const keyFilter = ['username', 'password'];
+    const credentials = await filterValuesFromEnvFile(filePath, keyFilter);
+    this.setBasicAuth(credentials);
+}
+
 async function obtainAccessToken(url, credentialsTable) {
     const credentials = credentialsTable.rowsHash();
     await this.getOAuthAccessToken(url, credentials);
 }
 
 async function obtainAccessTokenUsingFileCredentials(url, filePath) {
-    const envFile = await readFileAsync(join(process.cwd(), filePath), 'utf8');
-    const keyFilter = ['client_id', 'client_secret', 'username', 'password', 'grant_type', 'refreshToken']
-    const credentials = JSON.parse(envFile).values.reduce((acc, item) => {
-        return item.enabled && item.value && keyFilter.includes(item.key) ?
-            Object.assign(acc, { [item.key]: item.value }) :
-            acc;
-    }, {});
+    const keyFilter = ['client_id', 'client_secret', 'username', 'password', 'grant_type', 'refreshToken'];
+    const credentials = await filterValuesFromEnvFile(filePath, keyFilter);
     await this.getOAuthAccessToken(url, credentials);
 }
 
@@ -224,7 +247,11 @@ async function validateAgainstFileSchema(filePath) {
 }
 
 module.exports = {
+    noop: () => {},
     defaultContentType,
+    setCurrentAgentByRole,
+    basicAuth,
+    basicAuthUsingFileCredentials,
     obtainAccessToken,
     obtainAccessTokenUsingFileCredentials,
     setVariables,

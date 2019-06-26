@@ -35,8 +35,7 @@ let apiSepc = null;
 class World {
     constructor(...params) {
         this._req = null;
-        this._currentAgent = null;
-
+        this._currentAgent = this.newAgent();
         this.defaultContentType = 'application/json';
 
         // Provide a base url for all relative paths.
@@ -78,14 +77,24 @@ class World {
     }
 
     /**
+     * Getter for the full Open API spec
+     */
+    get apiSpec() {
+        if (!apiSepc) {
+            throw new Error('No API spec is loaded. This assertion cannot be performed.')
+        }
+        return apiSepc;
+    }
+
+    get latencyBuffer() {
+        return this._latencyBuffer;
+    }
+
+    /**
      * Getter for the current Superagent agent.
      * Reuse this agent in step definitions to preserve client sessions
      */
     get currentAgent() {
-        if (!this._currentAgent) {
-            this._currentAgent = this.newAgent();
-            this._currentAgent.set('User-agent', `behavioral-api-tester/${version}`);
-        }
         return this._currentAgent;
     }
 
@@ -98,17 +107,31 @@ class World {
     }
 
     /**
-     * Getter for the full Open API spec
+     * Creates and returns a new SuperAgent agent
      */
-    get apiSpec() {
-        if (!apiSepc) {
-            throw new Error('No API spec is loaded. This assertion cannot be performed.')
-        }
-        return apiSepc;
+    newAgent() {
+        const agent = request.agent();
+        agent._bat = {};
+        agent.set('User-Agent', `harver/behavioral-api-tester/${version}`);
+        return agent;
     }
 
-    get latencyBuffer() {
-        return this._latencyBuffer;
+    /**
+     * Get a Superagent agent for a specific authorization role
+     * @param {string} role The role, such as 'admin'
+     */
+    getAgentByRole(role) {
+        return agents.get(role);
+    }
+
+    /**
+     * Save a Superagent agent for a given authorization role
+     * @param {string} role
+     * @param {*} agent
+     */
+    setAgentByRole(role, agent) {
+        this._currentAgent = agent;
+        agents.set(role, agent);
     }
 
     /**
@@ -135,32 +158,39 @@ class World {
         }
     }
 
+    async setBasicAuth(credentials) {
+        const { username, password } = credentials;
+        const agent = this.currentAgent;
+        const encodedCredentials = Buffer.from(`${username}:${password}`).toString('base64');
+        agent.set('Authorization', `Basic ${encodedCredentials}`);
+    }
+
     /**
      * Get an Oauth2 access token, by sending the credentials to the endpoint url
      * @param {*} url The full token url ()
      * @param {*} credentials
      */
     async getOAuthAccessToken(url, credentials) {
-        const agentKey = `${credentials.client_id}:${credentials.username}`;
-        let agent = this.getAgentByRole(agentKey);
+        const agent = this.currentAgent;
 
         // do an oauth2 login
-        if (!agent) {
-            const res = await request
+        // only set the bearer token once on the agent
+        if (!agent._bat.bearer) {
+            const res = await agent
                 .post(this.baseUrl + this.replaceVars(url))
                 .type('form')
                 .send(credentials);
 
-            if (res.body.accessToken) {
-                agent = this.newAgent();
-                agent.set('Authorization', `Bearer ${res.body.accessToken}`);
-            } else {
+            // get the access token from the response body
+            const getAccessToken = body => body.accessToken || body.access_token;
+            if (!getAccessToken(res.body)) {
+                // no access token received.
                 throw new Error(`Could not authenticate with OAuth2:\n\t${res.body}`);
             }
-        }
 
-        // this also makes it the current agent
-        this.setAgentByRole(agentKey, agent);
+            agent._bat.bearer = getAccessToken(res.body);
+        }
+        agent.set('Authorization', `Bearer ${agent._bat.bearer}`);
     }
 
     /**
@@ -199,31 +229,6 @@ class World {
             req._data = this.replaceVars(req._data);
             return req;
         };
-    }
-
-    /**
-     * Creates and returns a new SuperAgent agent
-     */
-    newAgent() {
-        return request.agent();
-    }
-
-    /**
-     * Get a Superagent agent for a specific authorization role
-     * @param {string} role The role, such as 'admin'
-     */
-    getAgentByRole(role) {
-        return agents.get(role);
-    }
-
-    /**
-     * Save a Superagent agent for a given authorization role
-     * @param {string} role
-     * @param {*} agent
-     */
-    setAgentByRole(role, agent) {
-        this._currentAgent = agent;
-        agents.set(role, agent);
     }
 
     /**

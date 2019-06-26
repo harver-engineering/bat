@@ -1,6 +1,6 @@
 {
   "name": "@harver/bat",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "A Gherkin based DSL for testing HTTP APIs via Cucumber.JS.",
   "main": "src/index.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "start": "node test/server",
     "cucumber": "LATENCY_BUFFER=1000 ENV_FILE=test/env/dev.json API_SPEC_FILE=test/openapi.yaml cucumber-js test",
     "test": "./run-tests.sh",
-    "release": "standard-version"
+    "release": "standard-version",
+    "examples" : "cucumber-js examples"
   },
   "standard-version": {
     "message": "chore: Release v%s",
