@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+const url = require('url');
+const http = require('http');
 const { setWorldConstructor, After, AfterAll, Before, BeforeAll, Given, When, Then } = require('cucumber');
 const { registerHooks, World: BaseWorld, registerSteps } = require('../../../src/index');
 
@@ -26,7 +28,7 @@ registerHooks({ After, AfterAll, Before, BeforeAll });
 registerSteps({ Given, Then, When });
 
 // a custom login step
-Given('I am logged in as a {string}', async function(role) {
+Given('I am logged in as a {string}', async function (role) {
     // does an agent for this role already exist?
     const roleAgent = this.getAgentByRole(role);
     if (roleAgent) {
@@ -44,6 +46,12 @@ Given('I am logged in as a {string}', async function(role) {
     });
     this.setAgentByRole(role, agent);
 });
+
+AfterAll(function (done) {
+    const options = url.parse(require('../../env/dev.json').values.find(val => val.key === 'base').value);
+    const req = http.request({ ...options, path: '/reset' }, () => done());
+    req.end();
+})
 
 process.on('unhandledRejection', reason => {
     console.error('\nThere was an unhandled rejection: "%s"', reason);
