@@ -18,13 +18,15 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const auth = require('basic-auth');
 const { equal, deepEqual, AssertionError } = require('assert');
+const graphqlHTTP = require('express-graphql');
+const schema = require('./graphql/schemas');
 
 const app = express();
 
 app.use(session({
     secret: 'keyboard bat',
     saveUninitialized: false,
-}));;
+}));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -193,7 +195,12 @@ app.use((err, req, res, next) => {
     console.warn(`Assertion error: ${err.message}`);
     res.status(err instanceof AssertionError ? 418 : (err.status || 500));
     res.send({ message: err.message });
-})
+});
+
+app.use('/graphql', graphqlHTTP({
+    schema,
+    graphiql: true,
+}));
 
 const port = 3000;
 app.listen(port, () => {

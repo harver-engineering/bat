@@ -22,6 +22,7 @@ const toJsonSchema = require('openapi-schema-to-json-schema');
 const { readFile } = require('fs');
 const { join } = require('path');
 const { promisify } = require('util');
+const ql = require('superagent-graphql');
 const readFileAsync = promisify(readFile);
 
 const methodsWithBodies = ['POST', 'PUT', 'PATCH', 'DELETE'];
@@ -80,12 +81,16 @@ function setVariables(varTable) {
 }
 
 function makeRequest(method, url) {
-    this.originalUrl = url;
     this.req = this.currentAgent[method.toLowerCase()](this.baseUrl + this.replaceVars(url));
 
     if (methodsWithBodies.includes(method)) {
         this.req.set('Content-Type', 'application/json');
     }
+}
+
+function makeGraphQLRequest(query) {
+    this.req = this.currentAgent['post'](this.baseGraphQLUrl);
+    this.req.use(ql(query));
 }
 
 function addQueryString(qs) {
@@ -256,6 +261,7 @@ module.exports = {
     obtainAccessTokenUsingFileCredentials,
     setVariables,
     makeRequest,
+    makeGraphQLRequest,
     addQueryString,
     addRequestBody,
     addRequestBodyWithContentType,

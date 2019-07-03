@@ -30,9 +30,12 @@
     "chai": "^4.2.0",
     "chalk": "^2.4.1",
     "cookie": "^0.3.1",
+    "express-graphql": "^0.8.0",
+    "graphql": "^14.4.1",
     "jsonpath-plus": "^0.16.0",
     "openapi-schema-to-json-schema": "^2.2.0",
     "superagent": "^4.1.0",
+    "superagent-graphql": "^0.1.2",
     "swagger-parser": "^5.0.5"
   },
   "devDependencies": {
