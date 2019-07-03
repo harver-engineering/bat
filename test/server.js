@@ -113,11 +113,11 @@ const tokens = {
     'gerald': 't3',
 }
 
-let geraldRequestCount = 0;
+let geraldAuthRequestCount = 0;
 
 app.post('/auth/token', function (req, res, next) {
     // specific test to ensure bearer token requests aren't repeated for the same user
-    if (req.body.username && req.body.username === 'gerald' && ++geraldRequestCount > 1) {
+    if (req.body.username && req.body.username === 'gerald' && ++geraldAuthRequestCount > 1) {
         next(new Error('Too many token requests from Gerald'));
     }
 
@@ -181,6 +181,13 @@ app.get('/basic/auth/test', function (req, res, next) {
         next(err);
     }
 });
+
+// reset values after a test suite run
+app.get('/reset', function (req, res) {
+    geraldAuthRequestCount = 0;
+    res.status(204);
+    res.send();
+})
 
 app.use((err, req, res, next) => {
     console.warn(`Assertion error: ${err.message}`);
