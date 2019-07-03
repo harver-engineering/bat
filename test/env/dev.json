@@ -11,6 +11,16 @@
         {
             "key": "user_user",
             "value": "gerald"
+        },
+        {
+            "key": "username",
+            "value": "priamo",
+            "enabled": true
+        },
+        {
+            "key": "password",
+            "value": "glutes",
+            "enabled": true
         }
     ]
 }
