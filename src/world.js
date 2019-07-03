@@ -42,7 +42,7 @@ class World {
         // Using a variable: `{base}/foo` is preferred though
         this._baseUrl = process.env.BASE_URL || '';
         this._latencyBuffer = process.env.LATENCY_BUFFER ? parseInt(process.env.LATENCY_BUFFER, 10) : 0;
-        if(isNaN(this._latencyBuffer)) {
+        if (isNaN(this._latencyBuffer)) {
             throw new Error(`process.env.LATENCY_BUFFER is not an integer (${process.env.LATENCY_BUFFER})`)
         }
 
@@ -201,7 +201,6 @@ class World {
      */
     replaceVars(val) {
         const vars = [].concat(this.responseVars).concat(this.userVars).concat(this.envVars);
-
         if (!val) {
             return val;
         }
@@ -224,7 +223,7 @@ class World {
             req.originalUrl = this.originalUrl || req.url;
             req.url = this.replaceVars(req.url);
             req.qs = this.replaceVars(req.qs);
-            req.headers = this.replaceVars(req.headers);
+            req.header = this.replaceVars(req.header);
             req.cookies = this.replaceVars(req.cookies);
             req._data = this.replaceVars(req._data);
             return req;

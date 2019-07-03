@@ -10,7 +10,7 @@
     "cucumber": "LATENCY_BUFFER=1000 ENV_FILE=test/env/dev.json API_SPEC_FILE=test/openapi.yaml cucumber-js test",
     "test": "./run-tests.sh",
     "release": "standard-version",
-    "examples" : "cucumber-js examples"
+    "examples": "cucumber-js examples"
   },
   "standard-version": {
     "message": "chore: Release v%s",
@@ -36,6 +36,7 @@
     "swagger-parser": "^5.0.5"
   },
   "devDependencies": {
+    "basic-auth": "^2.0.1",
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.3",
     "cucumber": "^5.0.1",

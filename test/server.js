@@ -16,6 +16,7 @@ const express = require('express');
 const session = require('express-session')
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const auth = require('basic-auth');
 const { equal, deepEqual, AssertionError } = require('assert');
 
 const app = express();
@@ -41,8 +42,8 @@ const pets = [{
 
 app.get('/pets', (req, res, next) => {
     try {
-        equal(req.header['accept-language', 'nl']);
-        equal(req.header['content-type', 'application/json']);
+        equal(req.get('accept-language'), 'nl');
+        equal(req.get('content-type'), 'application/json');
 
         deepEqual(req.cookies, { foo: 'bar', path: '/' });
         equal(req.query.sort, 'desc');
@@ -112,7 +113,14 @@ const tokens = {
     'gerald': 't3',
 }
 
-app.post('/auth/token', function (req, res) {
+let geraldRequestCount = 0;
+
+app.post('/auth/token', function (req, res, next) {
+    // specific test to ensure bearer token requests aren't repeated for the same user
+    if (req.body.username && req.body.username === 'gerald' && ++geraldRequestCount > 1) {
+        next(new Error('Too many token requests from Gerald'));
+    }
+
     if (tokens[req.body.username]) {
         return res.json({
             accessToken: tokens[req.body.username],
@@ -142,7 +150,7 @@ app.post('/my-login', (req, res, next) => {
         phil: 'admin',
         gerald: 'user',
     };
-    if(!req.session.loggedIn) {
+    if (!req.session.loggedIn) {
         // first login will set role
         req.session.role = userToRole[req.body.username] || 'guest';
     }
@@ -153,8 +161,8 @@ app.post('/my-login', (req, res, next) => {
 
 app.get('/session/secret', function (req, res, next) {
     const sessionSecrets = {
-        'admin' : 'pipistrelle',
-        'user' : 'barbastelle',
+        'admin': 'pipistrelle',
+        'user': 'barbastelle',
     }
     res.status(200);
     res.send({
@@ -162,7 +170,17 @@ app.get('/session/secret', function (req, res, next) {
     })
 });
 
-
+app.get('/basic/auth/test', function (req, res, next) {
+    try {
+        const { name, pass } = auth.parse(req.get('Authorization'));
+        equal(name, 'priamo');
+        equal(pass, 'glutes');
+        res.status(200);
+        res.send();
+    } catch (err) {
+        next(err);
+    }
+});
 
 app.use((err, req, res, next) => {
     console.warn(`Assertion error: ${err.message}`);

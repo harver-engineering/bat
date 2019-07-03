@@ -34,14 +34,51 @@ function registerSteps({ Given, When, Then }) {
      */
     Given('I am anonymous', fn.noop);
 
+    /**
+     * ### Given I am a {string}
+     * Setting a user role allows you to reuse sessions, bearer tokens etc across
+     * scenarios without needing re-authenticate each time. Under the hood this is storing
+     * a collection of SuperAgent agents.
+     */
     Given(/^I am an? "([^"]*)"$/, fn.setCurrentAgentByRole);
 
+    /**
+     * ### Given I am using basic authentication with the credentials:
+     * Sets a base 64 encoded basic authentication header that is used on subsequent requests.
+     *
+     * @example
+     * Given I am using basic authentication with the credentials:
+     *   | username | <username> |
+     *   | password | <password> |
+     *
+     * @example <caption>Short form</caption>
+     * Given basic auth using:
+     *   | username | <username> |
+     *   | password | <password> |
+     *
+     * @function basicAuth
+     */
     Given('I am using basic authentication with the credentials:', fn.basicAuth);
 
+    // short form
     Given('basic auth using:', fn.basicAuth);
 
+    /**
+     * ### Given I am using basic authentication using credentials from: {string}
+     * Sets a base 64 encoded basic authentication header that is used on subsequent requests using
+     * credentials obtained from a Postman-like environment file.
+     *
+     * @example
+     * Given I am using basic authentication using credentials from: "/path/to/user.json"
+     *
+     * @example <caption>Short form</caption>
+     * Given basic auth using credentials from: "/path/to/user.json"
+     *
+     * @function basicAuthUsingFileCredentials
+     */
     Given('I am using basic authentication using credentials from: {string}', fn.basicAuthUsingFileCredentials);
 
+    // short form
     Given('basic auth using credentials from: {string}', fn.basicAuthUsingFileCredentials);
 
     /**
@@ -68,7 +105,7 @@ function registerSteps({ Given, When, Then }) {
     Given('get token from {string} using:', fn.obtainAccessToken);
 
     /**
-     * ### Given I obtain an access token from {string} using the credentials:
+     * ### Given I obtain an access token from {string} using the credentials from: {string}
      * Supports logging into using OAuth2 credentials, typically with the password scheme
      * Sessions (access tokens) will be stored and supported for subsequent requests
      *

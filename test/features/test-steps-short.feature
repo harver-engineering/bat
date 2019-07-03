@@ -31,20 +31,17 @@ Feature: API Testing Steps
       | filter | {color}     |
       | time   | {timestamp} |
     And set cookie:
-      | Name  | Value | Flags |
-      | foo   | bar     | path=/   |
+      | Name | Value | Flags  |
+      | foo  | bar   | path=/ |
     And set:
-      | Name  | Accept-Language |
-      | Value | {lang}          |
-    And set:
-      | Name  | Content-Type     |
-      | Value | application/json |
+      | Accept-Language | {lang}           |
+      | Content-Type    | application/json |
     Then receive status 200
     And within 1000ms
     And receive text:
-    """
-    [{"id":"1000","type":"cat","name":"Felix"},{"id":"2000","type":"dog","name":"Rover"}]
-    """
+      """
+      [{"id":"1000","type":"cat","name":"Felix"},{"id":"2000","type":"dog","name":"Rover"}]
+      """
     And validate against schema
     And validate against the schema:
       """
@@ -155,16 +152,49 @@ Feature: API Testing Steps
 
   @short
   @oauth
-  Scenario: Testing OAuth support
+  Scenario: Testing OAuth support for Jayani
     Given get token from "{base}/auth/token" using:
       | client_id | 123    |
       | username  | jayani |
     When GET "{base}/secret/jayani"
     Then receive status 201
 
+  @short
+  @oauth
+  Scenario: Testing OAuth support for Gerald 1
+    Given I am a "Gerald"
     Given get token from "{base}/auth/token" using:
       | client_id | 123    |
       | username  | gerald |
     When GET "{base}/secret/gerald"
     Then receive status 201
     Then print the response body
+
+  @short
+  @oauth
+  Scenario: Testing OAuth support for Gerald 1
+    Given I am a "Gerald"
+    # the previous scenario already got a bearer token for gerald
+    # so this test ensures it is re-used and not requested again
+    Given get token from "{base}/auth/token" using:
+      | client_id | 123    |
+      | username  | gerald |
+    When GET "{base}/secret/gerald"
+    Then receive status 201
+    Then print the response body
+
+  @short
+  @auth
+  Scenario: Testing basic authentication
+    Given basic auth using:
+      | username | priamo |
+      | password | glutes |
+    When GET "{base}/basic/auth/test"
+    Then receive status 200
+
+  @short
+  @basicauth
+  Scenario: Testing basic authentication
+    Given basic auth using credentials from: "./test/env/dev.json"
+    When GET "{base}/basic/auth/test"
+    Then receive status 200

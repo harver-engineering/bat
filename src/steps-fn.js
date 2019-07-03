@@ -40,7 +40,7 @@ async function filterValuesFromEnvFile(filePath, keyFilter) {
 }
 
 function setCurrentAgentByRole(role) {
-    if(this.getAgentByRole(role)) {
+    if (this.getAgentByRole(role)) {
         this.currentAgent = this.getAgentByRole(role);
     } else {
         this.setAgentByRole(role, this.newAgent());
@@ -247,7 +247,7 @@ async function validateAgainstFileSchema(filePath) {
 }
 
 module.exports = {
-    noop: () => {},
+    noop: () => { },
     defaultContentType,
     setCurrentAgentByRole,
     basicAuth,

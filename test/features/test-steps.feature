@@ -33,18 +33,15 @@ Feature: API Testing Steps
     And I set the cookie:
       | Name | Value | Flags  |
       | foo  | bar   | path=/ |
-    And I set the request header:
-      | Name  | Accept-Language |
-      | Value | {lang}          |
-    And I set the request header:
-      | Name  | Content-Type     |
-      | Value | application/json |
+    And I set the request headers:
+      | Accept-Language | {lang}           |
+      | Content-Type    | application/json |
     Then I should receive a response with the status 200
     And I should receive a response within 1000ms
     And I should receive the text:
-    """
-    [{"id":"1000","type":"cat","name":"Felix"},{"id":"2000","type":"dog","name":"Rover"}]
-    """
+      """
+      [{"id":"1000","type":"cat","name":"Felix"},{"id":"2000","type":"dog","name":"Rover"}]
+      """
     And the response body should validate against its schema
     And the response body should validate against the schema:
       """
@@ -149,6 +146,7 @@ Feature: API Testing Steps
     Then I should receive a response with the status 200
     And the response body json path at "$.name" should equal "Felix"
 
+  @long
   Scenario: Can Test status code 4**
     When I send a 'PUT' request to '{base}/pets/5000'
     Then I should receive a response with the status 418
@@ -164,3 +162,19 @@ Feature: API Testing Steps
     When I send a 'GET' request to '{base}/secret/jayani'
     Then I should receive a response with the status 201
     Then print the response body
+
+  @long
+  @basicauth
+  Scenario: Testing basic authentication
+    Given I am using basic authentication with the credentials:
+      | username | priamo |
+      | password | glutes |
+    When I send a 'GET' request to '{base}/basic/auth/test'
+    Then I should receive a response with the status 200
+
+  @long
+  @basicauth
+  Scenario: Testing basic authentication
+    Given I am using basic authentication using credentials from: "./test/env/dev.json"
+    When I send a 'GET' request to '{base}/basic/auth/test'
+    Then I should receive a response with the status 200
