@@ -25,6 +25,7 @@ const app = express();
 
 app.use(session({
     secret: 'keyboard bat',
+    resave : true,
     saveUninitialized: false,
 }));
 
