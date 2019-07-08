@@ -22,14 +22,22 @@ Feature: Twitter Standard search API
         And get token from "https://api.twitter.com/oauth2/token" using:
             | grant_type | client_credentials |
 
+    @twitter
     Scenario: Search for tweets containing "Trump"
+        Given I set the variable:
+            | query | Trump |
         When I send a 'GET' request to 'https://api.twitter.com/1.1/search/tweets.json'
         And I add the query string parameters:
-            | q | Trump |
+            | q | {query} |
         Then I should receive a response with the status 200
+        Then the response body json path at "$.search_metadata.query" should equal "Trump"
 
+    @twitter
     Scenario: Search for Tweets containing "Boris"
+        Given I set the variable:
+            | query | Boris |
         When I send a 'GET' request to 'https://api.twitter.com/1.1/search/tweets.json'
         And I add the query string parameters:
-            | q | Boris |
+            | q | {query} |
         Then I should receive a response with the status 200
+        Then the response body json path at "$.search_metadata.query" should equal "{query}"

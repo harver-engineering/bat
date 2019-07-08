@@ -81,6 +81,7 @@ function setVariables(varTable) {
 }
 
 function makeRequest(method, url) {
+    this.originalUrl = url;
     this.req = this.currentAgent[method.toLowerCase()](this.baseUrl + this.replaceVars(url));
 
     if (methodsWithBodies.includes(method)) {
@@ -149,7 +150,7 @@ function setRequestHeaders(tableData) {
 }
 
 function populatePlaceholder(placeHolder, jsonPath, previousMethod, previousPath) {
-    const previousResponse = this.retrieveResponse(this.replaceVars(previousPath), previousMethod);
+    const previousResponse = this.retrieveResponse(previousPath, previousMethod);
     const placeHolderValue = JSONPath.eval(previousResponse, jsonPath)[0];
 
     this.responseVars.push({

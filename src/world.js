@@ -262,7 +262,7 @@ class World {
         const res = await this.getResponse();
         const { url, method } = this.req;
         const status = res.status.toString();
-        const cacheKey = getResponseCacheKey(url.split('?')[0], method, status);
+        const cacheKey = getResponseCacheKey((this.originalUrl || url).split('?')[0], method, status);
         responseCache.set(cacheKey, res.body);
     }
 

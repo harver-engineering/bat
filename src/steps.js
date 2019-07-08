@@ -478,6 +478,9 @@ function registerSteps({ Given, When, Then }) {
      * @example
      * Then the response body json path at "$.[1].name" should be empty
      *
+     * @example <caption>Short form</caption>
+     * Then json path at "$.[1].name" should be empty
+     *
      * @function responseBodyJsonPathIsEmpty
      */
     Then('the response body json path at {string} should be empty', fn.responseBodyJsonPathIsEmpty);
