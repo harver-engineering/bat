@@ -40,7 +40,7 @@ Feature: API Testing Steps
     And within 1000ms
     And receive text:
       """
-      [{"id":"1000","type":"cat","name":"Felix"},{"id":"2000","type":"dog","name":"Rover"}]
+      [{"id":"1000","type":"cat","name":"Felix","age":10},{"id":"2000","type":"dog","name":"Rover","age":3}]
       """
     And validate against schema
     And validate against the schema:
@@ -83,6 +83,7 @@ Feature: API Testing Steps
       }
       """
     And json path at "$.[1].name" should equal "Rover"
+    And the response body json path at "$.[0].age" should match "\d{2}"
     And the response header "Content-Language" should equal "en"
 
   @short
@@ -202,41 +203,41 @@ Feature: API Testing Steps
   @short
   Scenario: Testing get all pets graphql query
     When GraphQL:
-    """
-    {
+      """
+      {
       pets {
-        id
-        name
-        type
+      id
+      name
+      type
       }
-    }
-    """
+      }
+      """
     Then receive status 200
 
   @short
   Scenario: Testing get single pet graphql query
     When GraphQL:
-    """
-    {
+      """
+      {
       pet (id:"1000") {
-        name
-        id
+      name
+      id
       }
-    }
-    """
+      }
+      """
     Then receive status 200
     And json path at "$.data.pet.id" should equal "1000"
 
   @short
   Scenario: Testing add a new pet graphql mutation query
     When GraphQL:
-    """
-    mutation {
+      """
+      mutation {
       addPet (id:"3000", name:"bird", type:"Canary") {
-        name
-        id
+      name
+      id
       }
-    }
-    """
+      }
+      """
     Then receive status 200
     And json path at "$.data.addPet.id" should equal "3000"

@@ -22,6 +22,7 @@
     * [~receiveText()](#module_steps..receiveText)
     * [~responseHeaderEquals()](#module_steps..responseHeaderEquals)
     * [~responseBodyJsonPathEquals()](#module_steps..responseBodyJsonPathEquals)
+    * [~responseBodyJsonPathMatches()](#module_steps..responseBodyJsonPathMatches)
     * [~responseBodyJsonPathIsEmpty()](#module_steps..responseBodyJsonPathIsEmpty)
     * [~responseCookieEquals()](#module_steps..responseCookieEquals)
     * [~validateAgainstSpecSchema()](#module_steps..validateAgainstSpecSchema)
@@ -331,6 +332,18 @@ Then the response body json path at "$.[1].name" should equal "Rover"
 ```js
 Then json path at "$.[1].name" should equal "Rover"
 ```
+### Then the response body json path at {string} should match {string}
+Ensure a JSON response body contains a given value at the JSON path.
+See [http://goessner.net/articles/JsonPath/](http://goessner.net/articles/JsonPath/)
+
+**Example**  
+```js
+Then the response body json path at "$.[1].age" should match "\d+"
+```
+**Example** *(Short form)*  
+```js
+Then json path at "$.[1].age" should match "\d+"
+```
 ### Then the response body json path at {string} should be empty
 Ensure the JSON path is empty.
 See [http://goessner.net/articles/JsonPath/](http://goessner.net/articles/JsonPath/)
@@ -339,6 +352,10 @@ See [https://www.chaijs.com/api/bdd/#method_empty](https://www.chaijs.com/api/bd
 **Example**  
 ```js
 Then the response body json path at "$.[1].name" should be empty
+```
+**Example** *(Short form)*  
+```js
+Then json path at "$.[1].name" should be empty
 ```
 ### Then I should receive a response that sets the cookie:
 

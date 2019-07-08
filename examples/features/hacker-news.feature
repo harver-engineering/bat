@@ -24,16 +24,17 @@ Feature: Hacker News
     @hn
     Scenario: One
         When GET "{base}/topstories.json"
-        Then I should receive a response with the status 200
+        Then receive status 200
 
     @hn
     Scenario: Two
-        And GET "{base}/item/{storyId}.json"
+        When GET "{base}/item/{storyId}.json"
         And I set the placeholder 'storyId' using the json path '$.[0]' from the last 'GET' to '{base}/topstories.json'
         Then receive status 200
 
     @hn
     Scenario: Three
-        And GET "{base}/user/{userId}.json"
+        When GET "{base}/user/{userId}.json"
         And I set the placeholder 'userId' using the json path '$.by' from the last 'GET' to '{base}/item/{storyId}.json'
         Then receive status 200
+        And json path at "$.karma" should match "\d+"

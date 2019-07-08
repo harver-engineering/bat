@@ -25,7 +25,7 @@ const app = express();
 
 app.use(session({
     secret: 'keyboard bat',
-    resave : true,
+    resave: true,
     saveUninitialized: false,
 }));
 
@@ -37,10 +37,12 @@ const pets = [{
     id: '1000',
     type: 'cat',
     name: 'Felix',
+    age: 10,
 }, {
     id: '2000',
     type: 'dog',
     name: 'Rover',
+    age: 3,
 }];
 
 app.get('/pets', (req, res, next) => {
