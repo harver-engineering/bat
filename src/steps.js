@@ -470,6 +470,25 @@ function registerSteps({ Given, When, Then }) {
     Then('json path at {string} should equal {string}', fn.responseBodyJsonPathEquals);
 
     /**
+     * ### Then the response body json path at {string} should match {string}
+     * Ensure a JSON response body at the given JSON path, matches a regular expression.
+     * n.b. For simpliciy, Bat variables in regular expressions are not subsituted.
+     * See [http://goessner.net/articles/JsonPath/](http://goessner.net/articles/JsonPath/)
+     *
+     * @example
+     * Then the response body json path at "$.[1].age" should match "\d+"
+     *
+     * @example <caption>Short form</caption>
+     * Then json path at "$.[1].age" should match "\d+"
+     *
+     * @function responseBodyJsonPathMatches
+     */
+    Then('the response body json path at {string} should match {string}', fn.responseBodyJsonPathMatches);
+
+    // short form
+    Then('json path at {string} should match {string}', fn.responseBodyJsonPathMatches);
+
+    /**
      * ### Then the response body json path at {string} should be empty
      * Ensure the JSON path is empty.
      * See [http://goessner.net/articles/JsonPath/](http://goessner.net/articles/JsonPath/)
@@ -477,6 +496,9 @@ function registerSteps({ Given, When, Then }) {
      *
      * @example
      * Then the response body json path at "$.[1].name" should be empty
+     *
+     * @example <caption>Short form</caption>
+     * Then json path at "$.[1].name" should be empty
      *
      * @function responseBodyJsonPathIsEmpty
      */

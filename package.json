@@ -41,6 +41,7 @@
   "devDependencies": {
     "basic-auth": "^2.0.1",
     "body-parser": "^1.18.3",
+    "chai-match": "^1.1.1",
     "cookie-parser": "^1.4.3",
     "cucumber": "^5.0.1",
     "express": "^4.16.3",

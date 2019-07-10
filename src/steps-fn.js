@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const { expect } = require('chai');
+const chai = require('chai');
 const Ajv = require('ajv');
 const cookie = require('cookie');
 const JSONPath = require('jsonpath-plus');
@@ -24,6 +24,10 @@ const { join } = require('path');
 const { promisify } = require('util');
 const ql = require('superagent-graphql');
 const readFileAsync = promisify(readFile);
+
+chai.use(require('chai-match'));
+const { expect } = chai;
+
 
 const methodsWithBodies = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
@@ -81,6 +85,7 @@ function setVariables(varTable) {
 }
 
 function makeRequest(method, url) {
+    this.originalUrl = url;
     this.req = this.currentAgent[method.toLowerCase()](this.baseUrl + this.replaceVars(url));
 
     if (methodsWithBodies.includes(method)) {
@@ -149,7 +154,7 @@ function setRequestHeaders(tableData) {
 }
 
 function populatePlaceholder(placeHolder, jsonPath, previousMethod, previousPath) {
-    const previousResponse = this.retrieveResponse(this.replaceVars(previousPath), previousMethod);
+    const previousResponse = this.retrieveResponse(previousPath, previousMethod);
     const placeHolderValue = JSONPath.eval(previousResponse, jsonPath)[0];
 
     this.responseVars.push({
@@ -199,6 +204,12 @@ async function responseBodyJsonPathEquals(path, value) {
     const { body } = await this.getResponse();
     const actualValue = JSONPath.eval(body, path)[0];
     expect(actualValue).to.equal(this.replaceVars(value));
+}
+
+async function responseBodyJsonPathMatches(path, value) {
+    const { body } = await this.getResponse();
+    const actualValue = JSONPath.eval(body, path)[0];
+    expect(actualValue).to.match(new RegExp(value));
 }
 
 async function responseBodyJsonPathIsEmpty(path) {
@@ -275,6 +286,7 @@ module.exports = {
     receiveText,
     responseHeaderEquals,
     responseBodyJsonPathEquals,
+    responseBodyJsonPathMatches,
     responseBodyJsonPathIsEmpty,
     responseCookieEquals,
     validateAgainstSpecSchema,
