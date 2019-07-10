@@ -83,6 +83,7 @@ Feature: API Testing Steps
       }
       """
     And the response body json path at "$.[1].name" should equal "Rover"
+    And the response body json path at "$.[0].age" should equal "10"
     And the response body json path at "$.[0].age" should match "\d{2}"
     And the response header "Content-Language" should equal "en"
 
