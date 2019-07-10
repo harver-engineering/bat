@@ -26,8 +26,25 @@ const ql = require('superagent-graphql');
 const readFileAsync = promisify(readFile);
 
 chai.use(require('chai-match'));
-const { expect } = chai;
+chai.use(_chai => {
+    // support assertions with == (vs ===)
+    // this should be available in the future with Chai v5
+    // https://github.com/chaijs/chai/issues/906
+    _chai.Assertion.addMethod('equalLoosely', function (val) {
+        const { _obj } = this;
 
+        this.assert(
+            val == _obj,
+            'expected #{this} to equal #{exp}',
+            'expected #{this} to not equal #{exp}',
+            val,
+            _obj,
+            true,
+        );
+    });
+});
+
+const { expect } = chai;
 
 const methodsWithBodies = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
@@ -203,7 +220,7 @@ async function responseHeaderEquals(headerName, value) {
 async function responseBodyJsonPathEquals(path, value) {
     const { body } = await this.getResponse();
     const actualValue = JSONPath.eval(body, path)[0];
-    expect(actualValue).to.equal(this.replaceVars(value));
+    expect(actualValue).to.equalLoosely(this.replaceVars(value));
 }
 
 async function responseBodyJsonPathMatches(path, value) {

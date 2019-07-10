@@ -321,7 +321,8 @@ Ensure a response header equals the expect value
 Then the response header "Content-Type" should equal "application/json"
 ```
 ### Then the response body json path at {string} should equal {string}
-Ensure a JSON response body contains a given value at the JSON path.
+Ensure a JSON response body equals a given value at the JSON path. Equality is determined
+using `==` so giving value "10" will equal the number 10 in JSON.
 See [http://goessner.net/articles/JsonPath/](http://goessner.net/articles/JsonPath/)
 
 **Example**  
@@ -333,7 +334,8 @@ Then the response body json path at "$.[1].name" should equal "Rover"
 Then json path at "$.[1].name" should equal "Rover"
 ```
 ### Then the response body json path at {string} should match {string}
-Ensure a JSON response body contains a given value at the JSON path.
+Ensure a JSON response body at the given JSON path, matches a regular expression.
+n.b. For simpliciy, Bat variables in regular expressions are not subsituted.
 See [http://goessner.net/articles/JsonPath/](http://goessner.net/articles/JsonPath/)
 
 **Example**  

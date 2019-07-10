@@ -453,7 +453,8 @@ function registerSteps({ Given, When, Then }) {
 
     /**
      * ### Then the response body json path at {string} should equal {string}
-     * Ensure a JSON response body contains a given value at the JSON path.
+     * Ensure a JSON response body equals a given value at the JSON path. Equality is determined
+     * using `==` so giving value "10" will equal the number 10 in JSON.
      * See [http://goessner.net/articles/JsonPath/](http://goessner.net/articles/JsonPath/)
      *
      * @example
