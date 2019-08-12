@@ -53,6 +53,7 @@ app.get('/pets', (req, res, next) => {
         deepEqual(req.cookies, { foo: 'bar', path: '/' });
         equal(req.query.sort, 'desc');
         equal(req.query.filter, 'red');
+        deepEqual(req.query.select, ['name', 'age']);
         equal(isNaN(parseInt(req.query.time)), false);
 
         // force a tiny bit of latency to test the LATENCY_BUFFER config

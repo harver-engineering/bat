@@ -27,9 +27,11 @@ Feature: API Testing Steps
   Scenario: Testing Gets
     When GET "{base}/pets"
     And I add the query string parameters:
-      | sort   | desc        |
-      | filter | {color}     |
-      | time   | {timestamp} |
+      | sort     | desc        |
+      | filter   | {color}     |
+      | time     | {timestamp} |
+      | select[] | name        |
+      | select[] | age         |
     And I set the cookie:
       | Name | Value | Flags  |
       | foo  | bar   | path=/ |
@@ -91,9 +93,11 @@ Feature: API Testing Steps
   Scenario: Testing Alternative Table Syntax for multiples
     When I send a 'GET' request to '{base}/pets'
     And I add the query string parameters:
-      | sort   | desc        |
-      | filter | red         |
-      | time   | {timestamp} |
+      | sort     | desc        |
+      | filter   | red         |
+      | time     | {timestamp} |
+      | select[] | name        |
+      | select[] | age         |
     And I set the cookies:
       | Name | Value | Flags  |
       | foo  | bar   | path=/ |

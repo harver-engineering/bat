@@ -615,8 +615,10 @@ function registerSteps({ Given, When, Then }) {
      * @function printRequest
      */
     Then('print the request', async function () {
-        this.debug.push(`[debug] Showing request details for "${this.req.method}" to "${this.req.url}":\n`);
-        this.debug.push(JSON.stringify(this.req, null, '  '));
+        const req = this.replaceVariablesInitiator()(this.req);
+        this.debug.push(`[debug] Showing request details for "${req.method}" to "${req.url}":\n`);
+        const { method, url, headers, qs, _data: data } = req;
+        this.debug.push(JSON.stringify({ method, url, headers, qs, data }, null, '  '));
     });
 
     /**
