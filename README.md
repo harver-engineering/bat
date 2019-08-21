@@ -1,4 +1,4 @@
-Bat 🦇 - Behavioral API Tester &middot; [![Build Status](https://travis-ci.org/harver-engineering/bat.svg?branch=master)](https://travis-ci.org/harver-engineering/bat) ![npm](https://img.shields.io/npm/v/bat)
+Bat 🦇 - Behavioral API Tester &middot; [![Build Status](https://travis-ci.org/harver-engineering/bat.svg?branch=master)](https://travis-ci.org/harver-engineering/bat) ![npm (scoped)](https://img.shields.io/npm/v/@harver/bat) ![GitHub](https://img.shields.io/github/license/harver-engineering/bat)
 ==============================
 
 A [Gherkin](https://docs.cucumber.io/gherkin/) based DSL for testing HTTP APIs via [Cucumber.JS](https://github.com/cucumber/cucumber-js).
@@ -23,11 +23,11 @@ list of all the available `Given`, `When` and `Then` steps.
 
 ## Contents
 
- * Install
- * Get started
- * Tips
- * Extending
- * Reference
+ * [Install](#install)
+ * [Get started](#get-started)
+ * [Tips](#tips)
+ * [Extending](#extending)
+ * [Reference](#reference)
 
 ## Install
 
@@ -96,7 +96,7 @@ The env file will look like this:
 
 You may then reference this variables, in your steps, like so:
 
-```gerkhin
+```gherkin
 When I send a 'GET' request to '{base}/pets'
 ```
 
@@ -137,7 +137,7 @@ This example allows an extra second for all requests to complete.
 Under the hood, Bat uses [SuperAgent](https://visionmedia.github.io/superagent/) for making HTTP requests. You can get a new SuperAgent agent without requiring SuperAgent directly as a dependency by calling `this.newAgent()` within a custom
 step definition:
 
-```js
+```javascript
 const agent = this.newAgent();
 ```
 
@@ -147,7 +147,7 @@ means that if each scenario uses a `Given` step to set up some authorization, an
 The code example below (taken from the tests), demonstrates a custom `Given` step
 for logging in and maintaining a client session:
 
-```gherkin
+```javascript
 const { setWorldConstructor, After, AfterAll, Before, BeforeAll, Given, When, Then } = require('cucumber');
 const { registerHooks, World, registerSteps } = require('@harver/bat');
 
