@@ -1,6 +1,6 @@
 {
   "name": "@harver/bat",
-  "version": "0.8.0",
+  "version": "1.0.0",
   "description": "A Gherkin based DSL for testing HTTP APIs via Cucumber.JS.",
   "main": "src/index.js",
   "scripts": {
@@ -26,28 +26,28 @@
   "license": "MIT",
   "homepage": "https://github.com/harver-bv/bat",
   "dependencies": {
-    "ajv": "^6.5.4",
+    "ajv": "^6.10.2",
     "chai": "^4.2.0",
-    "chalk": "^2.4.1",
-    "cookie": "^0.3.1",
-    "express-graphql": "^0.8.0",
-    "graphql": "^14.4.1",
-    "jsonpath-plus": "^0.16.0",
+    "chalk": "^2.4.2",
+    "cookie": "^0.4.0",
+    "express-graphql": "^0.9.0",
+    "graphql": "^14.4.2",
+    "jsonpath-plus": "^1.0.0",
     "openapi-schema-to-json-schema": "^2.2.0",
-    "superagent": "^4.1.0",
+    "superagent": "^5.1.0",
     "superagent-graphql": "^0.1.2",
-    "swagger-parser": "^5.0.5"
+    "swagger-parser": "^8.0.0"
   },
   "devDependencies": {
     "basic-auth": "^2.0.1",
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.19.0",
     "chai-match": "^1.1.1",
-    "cookie-parser": "^1.4.3",
-    "cucumber": "^5.0.1",
-    "express": "^4.16.3",
-    "express-session": "^1.15.6",
-    "jsdoc-to-markdown": "^4.0.1",
-    "standard-version": "^5.0.0"
+    "cookie-parser": "^1.4.4",
+    "cucumber": "^5.1.0",
+    "express": "^4.17.1",
+    "express-session": "^1.16.2",
+    "jsdoc-to-markdown": "^5.0.0",
+    "standard-version": "^7.0.0"
   },
   "peerDependencies": {
     "cucumber": "5.x"

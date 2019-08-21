@@ -15,7 +15,7 @@
 const chai = require('chai');
 const Ajv = require('ajv');
 const cookie = require('cookie');
-const JSONPath = require('jsonpath-plus');
+const { JSONPath } = require('jsonpath-plus');
 const ajv = new Ajv({ schemaId: 'auto', unknownFormats: ['int32', 'int64', 'float'] });
 ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
 const toJsonSchema = require('openapi-schema-to-json-schema');
@@ -172,7 +172,7 @@ function setRequestHeaders(tableData) {
 
 function populatePlaceholder(placeHolder, jsonPath, previousMethod, previousPath) {
     const previousResponse = this.retrieveResponse(previousPath, previousMethod);
-    const placeHolderValue = JSONPath.eval(previousResponse, jsonPath)[0];
+    const placeHolderValue = JSONPath({ json: previousResponse, path: jsonPath })[0];
 
     this.responseVars.push({
         key: placeHolder,
@@ -219,19 +219,19 @@ async function responseHeaderEquals(headerName, value) {
 
 async function responseBodyJsonPathEquals(path, value) {
     const { body } = await this.getResponse();
-    const actualValue = JSONPath.eval(body, path)[0];
+    const actualValue = JSONPath({ json: body, path })[0];
     expect(actualValue).to.equalLoosely(this.replaceVars(value));
 }
 
 async function responseBodyJsonPathMatches(path, value) {
     const { body } = await this.getResponse();
-    const actualValue = JSONPath.eval(body, path)[0];
+    const actualValue = JSONPath({ json: body, path })[0];
     expect(actualValue).to.match(new RegExp(value));
 }
 
 async function responseBodyJsonPathIsEmpty(path) {
     const { body } = await this.getResponse();
-    const actualValue = JSONPath.eval(body, path)[0];
+    const actualValue = JSONPath({ json: body, path })[0];
     expect(actualValue).to.be.empty;
 }
 
