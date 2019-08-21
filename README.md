@@ -1,4 +1,4 @@
-Bat 🦇 - Behavioral API Tester
+Bat 🦇 - Behavioral API Tester &middot; [![Build Status](https://travis-ci.org/harver-engineering/bat.svg?branch=master)](https://travis-ci.org/harver-engineering/bat) ![npm](https://img.shields.io/npm/v/bat)
 ==============================
 
 A [Gherkin](https://docs.cucumber.io/gherkin/) based DSL for testing HTTP APIs via [Cucumber.JS](https://github.com/cucumber/cucumber-js).
