@@ -56,11 +56,12 @@ function defaultContentType(contentType) {
 
 async function filterValuesFromEnvFile(filePath, keyFilter) {
     const envFile = await readFileAsync(join(process.cwd(), filePath), 'utf8');
-    return JSON.parse(envFile).values.reduce((acc, item) => {
-        return item.enabled && item.value && keyFilter.includes(item.key) ?
-            Object.assign(acc, { [item.key]: item.value }) :
-            acc;
-    }, {});
+    return JSON.parse(envFile).values
+        .filter(item => item.enabled && item.value && keyFilter.includes(item.key))
+        .reduce((acc, { key, value }) => ({
+            ...acc,
+            [key]: value,
+        }), {});
 }
 
 function setCurrentAgentByRole(role) {
@@ -95,12 +96,12 @@ async function obtainAccessTokenUsingFileCredentials(url, filePath) {
 
 function setVariables(varTable) {
     const rows = varTable.rowsHash();
-    this.userVars = this.userVars.concat(Object.keys(rows).reduce((acc, curr) => {
-        return acc.concat([{
-            key: curr,
-            value: rows[curr],
-        }])
-    }, []));
+    this.userVars = this.userVars.concat(
+        Object.entries(rows).map(([key, value]) => ({
+            key,
+            value,
+        }))
+    );
 }
 
 function makeRequest(method, url) {
@@ -137,8 +138,7 @@ function _addRequestBody(body, contentType = this.defaultContentType) {
 
 function addRequestBodyWithContentType(contentType, body) {
     // if body was a data table (and not a doc string)
-    body = typeof body.rowsHash === 'function' ? body.rowsHash() : body;
-    _addRequestBody.call(this, body, contentType);
+    _addRequestBody.call(this, typeof body.rowsHash === 'function' ? body.rowsHash() : body, contentType);
 }
 
 function addRequestBody(body) {
@@ -150,7 +150,7 @@ async function addRequestBodyFromFile(fileName) {
     const body = await readFileAsync(join(process.cwd(), fileName), 'utf8');
 
     // Read and send the json data
-    _addRequestBody.call(this, body)
+    _addRequestBody.call(this, body);
 }
 
 async function addRequestBodyFromExample() {
@@ -250,7 +250,7 @@ async function responseCookieEquals(expectedCookieData) {
     const parsedCookie = cookie.parse(cookieStr);
 
     if (cookieValue) {
-        expect(cookieValue).to.be(parsedCookie[Name]);
+        expect(cookieValue).to.be(parsedCookie[cookieName]);
     }
     if (cookieValueLength) {
         expect(parsedCookie[cookieName].length).to.be(parseInt(cookieValueLength));
@@ -315,4 +315,4 @@ module.exports = {
     validateAgainstSpecSchema,
     validateAgainstInlineSchema,
     validateAgainstFileSchema,
-}
+};

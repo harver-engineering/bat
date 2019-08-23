@@ -13,7 +13,7 @@
 // limitations under the License.
 
 const express = require('express');
-const session = require('express-session')
+const session = require('express-session');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const auth = require('basic-auth');
@@ -68,10 +68,10 @@ app.get('/pets', (req, res, next) => {
 app.post('/pets', (req, res, next) => {
     try {
         const expectedRequestBody = req.query.useSpec ?
-            { "type": 'Racoon', "name": 'Ronny' } :
-            { "type": "Snake", "name": "Ka" };
+            { 'type': 'Racoon', 'name': 'Ronny' } :
+            { 'type': 'Snake', 'name': 'Ka' };
 
-        deepEqual(req.body, expectedRequestBody)
+        deepEqual(req.body, expectedRequestBody);
 
         res.status(201);
         res.json({ created: true });
@@ -103,7 +103,7 @@ app.put('/pets/:id', (req, res, next) => {
         if (pet) {
             res.json(pet);
         } else {
-            const err = new Error(`Pet not found with id: ${petId}`);
+            const err = new Error(`Pet not found with id: ${pet.id}`);
             err.status = 404;
             res.json({ msg: err.message });
         }
@@ -116,7 +116,7 @@ const tokens = {
     'jayani': 't1',
     'hasini': 't2',
     'gerald': 't3',
-}
+};
 
 let geraldAuthRequestCount = 0;
 
@@ -129,13 +129,13 @@ app.post('/auth/token', function (req, res, next) {
     if (tokens[req.body.username]) {
         return res.json({
             accessToken: tokens[req.body.username],
-        })
-    } else {
-        res.status(401);
-        res.json({
-            msg: 'Access denied',
-        })
+        });
     }
+    res.status(401);
+    res.json({
+        msg: 'Access denied',
+    });
+
 });
 
 app.get('/secret/:username', function (req, res, next) {
@@ -146,7 +146,7 @@ app.get('/secret/:username', function (req, res, next) {
             foo: 'bar',
         });
     } catch (err) {
-        next(err)
+        next(err);
     }
 });
 
@@ -168,11 +168,11 @@ app.get('/session/secret', function (req, res, next) {
     const sessionSecrets = {
         'admin': 'pipistrelle',
         'user': 'barbastelle',
-    }
+    };
     res.status(200);
     res.send({
         secret: sessionSecrets[req.session.role] || 'none',
-    })
+    });
 });
 
 app.get('/basic/auth/test', function (req, res, next) {
@@ -196,7 +196,7 @@ app.get('/reset', function (req, res) {
 
 app.get('/redirect/:code', function (req, res, next) {
     const { code } = req.params;
-    console.log(`Sending redirect: ${code}`)
+    console.log(`Sending redirect: ${code}`);
 
     res.redirect(parseInt(code, 10), `/redirect/${code}/redirected`);
 });

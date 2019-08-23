@@ -1,0 +1,127 @@
+{
+    "env": {
+        "es6": true,
+        "node": true
+    },
+    "extends": "eslint:recommended",
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "rules": {
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "disable-next-line": "off",
+        "array-callback-return": [
+            "error",
+            {
+                "allowImplicit": true
+            }
+        ],
+        "dot-notation": [
+            "off"
+        ],
+        "no-else-return": [
+            "error",
+            {
+                "allowElseIf": false
+            }
+        ],
+        "no-fallthrough": [
+            "warn"
+        ],
+        "no-multi-spaces": [
+            "error",
+            {
+                "ignoreEOLComments": true,
+                "exceptions": {
+                    "VariableDeclarator": true,
+                    "ImportDeclaration": true,
+                    "Property": true
+                }
+            }
+        ],
+        "no-param-reassign": [
+            "warn"
+        ],
+        "no-proto": [
+            "error"
+        ],
+        "no-with": [
+            "error"
+        ],
+        "no-labels": [
+            "error"
+        ],
+        "no-path-concat": [
+            "error"
+        ],
+        "no-duplicate-imports": [
+            "error"
+        ],
+        "eol-last": [
+            "error",
+            "always"
+        ],
+        "comma-spacing": [
+            "error",
+            {
+                "before": false,
+                "after": true
+            }
+        ],
+        "comma-dangle": [
+            "error",
+            "always-multiline"
+        ],
+        "arrow-body-style": [
+            "warn",
+            "as-needed"
+        ],
+        "no-plusplus": [
+            "off"
+        ],
+        "indent": [
+            "error",
+            4
+        ],
+        "no-unused-vars": [
+            "error",
+            {
+                "args": "none"
+            }
+        ],
+        "block-spacing": [
+            "error"
+        ],
+        "no-trailing-spaces": "error",
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "no-var": [
+            "error"
+        ],
+        "prefer-const": "error",
+        "prefer-rest-params": [
+            "error"
+        ],
+        "no-multiple-empty-lines": [
+            "error",
+            {
+                "max": 1,
+                "maxEOF": 1
+            }
+        ]
+    }
+}
