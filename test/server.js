@@ -194,6 +194,13 @@ app.get('/reset', function (req, res) {
     res.send();
 });
 
+app.get('/redirect/:code', function (req, res, next) {
+    const { code } = req.params;
+    console.log(`Sending redirect: ${code}`)
+
+    res.redirect(parseInt(code, 10), `/redirect/${code}/redirected`);
+});
+
 app.get('/error/:code', function (req, res, next) {
     const { code } = req.params;
     const err = new Error(`This is a ${code} status`);

@@ -242,3 +242,16 @@ Feature: API Testing Steps
       """
     Then receive status 200
     And json path at "$.data.addPet.id" should equal "3000"
+
+  @short
+    Scenario Outline: Scenario Outline name: Testing redirects
+      When GET "{base}/redirect/<status>"
+      Then receive status <status>
+
+        Examples:
+        | status |
+        | 301 |
+        | 302 |
+        | 303 |
+        | 307 |
+        | 308 |
