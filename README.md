@@ -75,6 +75,10 @@ Scenario: Testing Gets
 
 See the [Steps Reference](./docs/step-reference.md) for documentation on all available steps.
 
+### 4. Use the [Cucumber.JS CLI](https://github.com/cucumber/cucumber-js/blob/master/docs/cli.md) to run your specs
+
+`./node_modules/.bin/cucumber-js`
+
 ## Tips
 
 ### Use a Postman compatible environment file to define variables:
