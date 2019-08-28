@@ -192,7 +192,21 @@ app.get('/reset', function (req, res) {
     geraldAuthRequestCount = 0;
     res.status(204);
     res.send();
-})
+});
+
+app.get('/redirect/:code', function (req, res, next) {
+    const { code } = req.params;
+    console.log(`Sending redirect: ${code}`)
+
+    res.redirect(parseInt(code, 10), `/redirect/${code}/redirected`);
+});
+
+app.get('/error/:code', function (req, res, next) {
+    const { code } = req.params;
+    const err = new Error(`This is a ${code} status`);
+    err.status = code;
+    next(err);
+});
 
 app.use((err, req, res, next) => {
     console.warn(`Assertion error: ${err.message}`);

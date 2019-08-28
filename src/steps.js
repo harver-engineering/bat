@@ -387,6 +387,14 @@ function registerSteps({ Given, When, Then }) {
      * Ensure the response was received with a given status.
      * This should always be the first "Then" assertion.
      *
+     * #### Redirects
+     * Normally, HTTP redirects will be handled opaquely; the redirect is followed and the resulting response is
+     * asserted. However, if the status code to be asserted is a
+     * [redirect status code](https://en.wikipedia.org/wiki/URL_redirection#HTTP_status_codes_3xx) the redirect
+     * will not be followed.
+     *
+     * To assert to response header for the "location" use the appropriate separate step
+     *
      * @example
      * Then I should receive a response with the status 200
      *
@@ -395,10 +403,10 @@ function registerSteps({ Given, When, Then }) {
      *
      * @function receiveRequestWithStatus
      */
-    Then('I should receive a response with the status {int}', fn.receiveRequestWithStatus);
+    Then('I should receive a response with the status {int}', fn.receiveResponseWithStatus);
 
     // short form
-    Then('receive status {int}', fn.receiveRequestWithStatus);
+    Then('receive status {int}', fn.receiveResponseWithStatus);
 
     /**
      * ### Then I should receive a response within {int}ms

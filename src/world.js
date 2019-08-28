@@ -244,15 +244,7 @@ class World {
      * @param {} res A Superagent response object
      */
     async getResponse() {
-        let res;
-
-        try {
-            res = await this.req;
-        } catch (err) {
-            res = err.response;
-        }
-
-        return res;
+        return await this.req.ok(res => true);
     }
 
     /**

@@ -277,6 +277,14 @@ And I set the placeholder 'id' using the json path '$.[0].id' from the last 'GET
 Ensure the response was received with a given status.
 This should always be the first "Then" assertion.
 
+#### Redirects
+Normally, HTTP redirects will be handled opaquely; the redirect is followed and the resulting response is
+asserted. However, if the status code to be asserted is a
+[redirect status code](https://en.wikipedia.org/wiki/URL_redirection#HTTP_status_codes_3xx) the redirect
+will not be followed.
+
+To assert to response header for the "location" use the appropriate separate step
+
 **Example**  
 ```js
 Then I should receive a response with the status 200

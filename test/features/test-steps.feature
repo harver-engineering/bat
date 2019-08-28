@@ -221,3 +221,30 @@ Feature: API Testing Steps
       """
     Then receive status 200
     And json path at "$.data.addPet.id" should equal "3000"
+
+@long
+  Scenario Outline: Testing errors
+    When GET "{base}/error/<status>"
+    Then receive status <status>
+    And I should receive the text:
+      """
+      {"message":"This is a <status> status"}
+      """
+    Examples:
+    | status |
+    | 404 |
+    | 500 |
+
+
+@long
+  Scenario Outline: Testing redirects
+    When GET "{base}/redirect/<status>"
+    Then I should receive a response with the status <status>
+
+    Examples:
+    | status |
+    | 301 |
+    | 302 |
+    | 303 |
+    | 307 |
+    | 308 |

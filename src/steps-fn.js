@@ -48,6 +48,8 @@ const { expect } = chai;
 
 const methodsWithBodies = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
+const redirectStatuses = [ 301, 302, 303, 307, 308 ];
+
 function defaultContentType(contentType) {
     this.defaultContentType = contentType;
 }
@@ -180,12 +182,16 @@ function populatePlaceholder(placeHolder, jsonPath, previousMethod, previousPath
     });
 }
 
-async function receiveRequestWithStatus(status) {
+async function receiveResponseWithStatus(status) {
     // this sends the request
     // (await will implictly call `then()` on the SuperAgent request object,
     // which will implicitly send the request)
     const startAt = process.hrtime();
     try {
+        // don't follow redirects if that's what is expected
+        if(redirectStatuses.includes(status)) {
+            this.req.redirects(0);
+        }
         this.req.use(this.replaceVariablesInitiator());
         const res = await this.getResponse();
         this.saveCurrentResponse();
@@ -298,7 +304,7 @@ module.exports = {
     setRequestCookies,
     setRequestHeaders,
     populatePlaceholder,
-    receiveRequestWithStatus,
+    receiveResponseWithStatus,
     receiveWithinTime,
     receiveText,
     responseHeaderEquals,
