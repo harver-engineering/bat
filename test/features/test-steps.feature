@@ -221,3 +221,12 @@ Feature: API Testing Steps
       """
     Then receive status 200
     And json path at "$.data.addPet.id" should equal "3000"
+
+@long
+  Scenario: Testing errors
+    When GET "{base}/error/500"
+    Then receive status 500
+    And I should receive the text:
+      """
+      {"message":"This is a 500 status"}
+      """
