@@ -651,4 +651,4 @@ function registerSteps({ Given, When, Then }) {
 
 module.exports = {
     registerSteps,
-}
+};

@@ -8,9 +8,10 @@
     "docs": "jsdoc2md --partial docs/support/scope.hbs --partial docs/support/header.hbs --files src/steps.js> docs/step-reference.md && jsdoc2md --files src/world.js> docs/world-api.md",
     "start": "node test/server",
     "cucumber": "LATENCY_BUFFER=1000 ENV_FILE=test/env/dev.json API_SPEC_FILE=test/openapi.yaml cucumber-js test",
-    "test": "./run-tests.sh",
+    "test": "npm run lint && ./run-tests.sh",
     "release": "standard-version",
-    "examples": "cucumber-js examples"
+    "examples": "cucumber-js examples",
+    "lint": "eslint --config .eslintrc.json src/ test/"
   },
   "standard-version": {
     "message": "chore: Release v%s",
@@ -42,6 +43,7 @@
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
     "cucumber": "^5.1.0",
+    "eslint": "^6.3.0",
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
     "express-session": "^1.16.2",

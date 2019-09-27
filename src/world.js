@@ -44,7 +44,7 @@ class World {
         this._baseGraphQLUrl = process.env.GRAPHQL_BASE_URL || '';
         this._latencyBuffer = process.env.LATENCY_BUFFER ? parseInt(process.env.LATENCY_BUFFER, 10) : 0;
         if (isNaN(this._latencyBuffer)) {
-            throw new Error(`process.env.LATENCY_BUFFER is not an integer (${process.env.LATENCY_BUFFER})`)
+            throw new Error(`process.env.LATENCY_BUFFER is not an integer (${process.env.LATENCY_BUFFER})`);
         }
 
         const envFile = process.env.ENV_FILE || null;
@@ -89,7 +89,7 @@ class World {
      */
     get apiSpec() {
         if (!apiSepc) {
-            throw new Error('No API spec is loaded. This assertion cannot be performed.')
+            throw new Error('No API spec is loaded. This assertion cannot be performed.');
         }
         return apiSepc;
     }
@@ -215,7 +215,7 @@ class World {
 
         // cheeky way to easily replace on whole objects:
         const placeHolders = vars.map(pair => pair.key).join('|');
-        const regex = new RegExp(`\{(${placeHolders})\}`, 'g');
+        const regex = new RegExp(`{(${placeHolders})}`, 'g');
         return JSON.parse(JSON.stringify(val).replace(regex, (match, p1) => {
             const matchPair = vars.find(pair => pair.key === p1);
             return matchPair ? matchPair.value : match;
@@ -331,5 +331,5 @@ module.exports = {
         BeforeAll(loadApiSpec);
         Before(reset);
         After(printDebug);
-    }
-}
+    },
+};

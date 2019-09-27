@@ -53,7 +53,7 @@ AfterAll(function (done) {
     const options = url.parse(require('../../env/dev.json').values.find(val => val.key === 'base').value);
     const req = http.request({ ...options, path: '/reset' }, () => done());
     req.end();
-})
+});
 
 process.on('unhandledRejection', reason => {
     console.error('\nThere was an unhandled rejection: "%s"', reason);
