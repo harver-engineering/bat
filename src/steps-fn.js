@@ -119,7 +119,11 @@ function makeGraphQLRequest(query) {
 }
 
 function addQueryString(qs) {
-    const queryObject = qs.rowsHash();
+    const queryObject = qs.raw().reduce((acc, [key, value]) => {
+        const previousEntry = acc[key];
+        acc[key] = previousEntry ? [].concat(...[previousEntry, value]) : value;
+        return acc;
+      }, {});
     this.req.query(queryObject);
 }
 
