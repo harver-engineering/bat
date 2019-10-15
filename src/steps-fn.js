@@ -123,7 +123,7 @@ function addQueryString(qs) {
         const previousEntry = acc[key];
         acc[key] = previousEntry ? [].concat(...[previousEntry, value]) : value;
         return acc;
-      }, {});
+    }, {});
     this.req.query(queryObject);
 }
 
