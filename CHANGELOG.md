@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.1](https://github.com/harver-bv/bat/compare/v1.1.0...v1.1.1) (2019-10-15)
+
+
+### Bug Fixes
+
+* added eslint and updated dev dependencies ([a5869a0](https://github.com/harver-bv/bat/commit/a5869a0))
+* allow for repeated query parameters. ([507901f](https://github.com/harver-bv/bat/commit/507901f))
+* fixed bad indentation breaking linter ([df7b9ed](https://github.com/harver-bv/bat/commit/df7b9ed))
+
 ## 1.1.0 (2019-08-28)
 
 
