@@ -94,7 +94,7 @@ Given I obtain an access token from "{base}/auth/token" using the credentials fr
 ```js
 Given get token from "{base}/auth/token" using credentials from: "/path/to/user.json"
 ```
-### I am using the default content type: {string}
+### Given I am using the default content type: {string}
 Set a default Content-Type header for future requests. This is useful
 as a step in a feature's "Background"
 
@@ -123,10 +123,16 @@ Note: this should be the first "When"
 **Example**  
 ```js
 When I send a "GET" request to "/pets"
+When I send a "POST" request to "/pets"
+When I send a "PUT" request to "/pets/1234"
+When I send a "DELETE" request to "/pets/1234"
 ```
 **Example** *(Short form)*  
 ```js
 When GET "/pets"
+When POST "/pets"
+When PUT "/pets/1234"
+When DELETE "/pets/1234"
 ```
 ### When I send the GraphQL query:
 Construct a GraphQL query
@@ -283,7 +289,7 @@ asserted. However, if the status code to be asserted is a
 [redirect status code](https://en.wikipedia.org/wiki/URL_redirection#HTTP_status_codes_3xx) the redirect
 will not be followed.
 
-To assert to response header for the "location" use the appropriate separate step
+To assert the associated Location header use the appropriate separate step
 
 **Example**  
 ```js

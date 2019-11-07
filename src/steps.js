@@ -125,7 +125,7 @@ function registerSteps({ Given, When, Then }) {
         fn.obtainAccessTokenUsingFileCredentials);
 
     /**
-     * ### I am using the default content type: {string}
+     * ### Given I am using the default content type: {string}
      * Set a default Content-Type header for future requests. This is useful
      * as a step in a feature's "Background"
      *
@@ -168,9 +168,15 @@ function registerSteps({ Given, When, Then }) {
      *
      * @example
      * When I send a "GET" request to "/pets"
+     * When I send a "POST" request to "/pets"
+     * When I send a "PUT" request to "/pets/1234"
+     * When I send a "DELETE" request to "/pets/1234"
      *
      * @example <caption>Short form</caption>
      * When GET "/pets"
+     * When POST "/pets"
+     * When PUT "/pets/1234"
+     * When DELETE "/pets/1234"
      *
      * @function makeRequest
      */
@@ -393,7 +399,7 @@ function registerSteps({ Given, When, Then }) {
      * [redirect status code](https://en.wikipedia.org/wiki/URL_redirection#HTTP_status_codes_3xx) the redirect
      * will not be followed.
      *
-     * To assert to response header for the "location" use the appropriate separate step
+     * To assert the associated Location header use the appropriate separate step
      *
      * @example
      * Then I should receive a response with the status 200
