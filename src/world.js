@@ -18,6 +18,7 @@ const { parse: parseUrl } = require('url');
 const chalk = require('chalk');
 const request = require('superagent');
 const SwaggerParser = require('swagger-parser');
+const vault = require('node-vault');
 
 const agents = new Map();
 const responseCache = new Map();
@@ -26,6 +27,7 @@ const getResponseCacheKey = (path, method, status) => `${path};${method};${statu
 const { version } = require('../package.json');
 
 let apiSepc = null;
+let vaultSecrets = null;
 
 /** @module World */
 
@@ -33,7 +35,7 @@ let apiSepc = null;
  * State and stateful utilities can be shared between steps using an instance of "World"
  */
 class World {
-    constructor(...params) {
+    constructor({ parameters }) {
         this._req = null;
         this._currentAgent = this.newAgent();
         this.defaultContentType = 'application/json';
@@ -52,6 +54,11 @@ class World {
         this.env = process.env.TEST_ENV || null;
         this.responseVars = [];
         this.userVars = [];
+
+        // TODO: Provide vault configurations via environment vairables instead of world-parameters.
+        // Provide vault configurations
+        this.vaultToken = parameters.vault_token;
+        this.vaultSecret = parameters.vault_secret;
     }
 
     /**
@@ -181,13 +188,15 @@ class World {
     async getOAuthAccessToken(url, credentials) {
         const agent = this.currentAgent;
 
+        const payload = this.replaceVars(credentials);
+
         // do an oauth2 login
         // only set the bearer token once on the agent
         if (!agent._bat.bearer) {
             const res = await agent
                 .post(this.baseUrl + this.replaceVars(url))
                 .type('form')
-                .send(credentials);
+                .send(payload);
 
             // get the access token from the response body
             const getAccessToken = body => body.accessToken || body.access_token;
@@ -325,10 +334,46 @@ async function loadApiSpec() {
     }
 }
 
+async function loadSecrets() {
+    if (vaultSecrets) {
+        this.envVars = this.envVars.concat(vaultSecrets);
+    } else {
+        const { vaultToken, vaultSecret } = this;
+
+        if (process.env.VAULT_ADDR && vaultToken && vaultSecret) {
+            const vaultClient = vault({
+                apiVersion: 'v1',
+                token: vaultToken,
+                endpoint: process.env.VAULT_ADDR,
+            });
+
+            try {
+                const { data: { data } } = await vaultClient.read(vaultSecret);
+
+                // eslint-disable-next-line require-atomic-updates
+                vaultSecrets = Object.keys(data).reduce((secrets, secret) => {
+                    secrets.push({
+                        key: secret,
+                        value: data[secret],
+                    });
+
+                    return secrets;
+                }, []);
+
+                this.envVars = this.envVars.concat(vaultSecrets);
+            } catch (error) {
+                console.log('Vault read error. Please check the vault configurations.');
+                process.exit(1);
+            }
+        }
+    }
+}
+
 module.exports = {
     World,
     registerHooks: function ({ BeforeAll, Before, After }) {
         BeforeAll(loadApiSpec);
+        Before(loadSecrets);
         Before(reset);
         After(printDebug);
     },

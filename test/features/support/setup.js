@@ -18,8 +18,8 @@ const { setWorldConstructor, After, AfterAll, Before, BeforeAll, Given, When, Th
 const { registerHooks, World: BaseWorld, registerSteps } = require('../../../src/index');
 
 class World extends BaseWorld {
-    constructor() {
-        super();
+    constructor(...args) {
+        super(...args);
     }
 }
 
