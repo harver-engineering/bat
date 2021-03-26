@@ -18,6 +18,7 @@ const { parse: parseUrl } = require('url');
 const chalk = require('chalk');
 const request = require('superagent');
 const SwaggerParser = require('swagger-parser');
+const colorize = require('json-colorizer');
 
 const agents = new Map();
 const responseCache = new Map();
@@ -304,7 +305,14 @@ async function printDebug(info) {
             console.log('Url:\n');
             console.log(this.req.url);
             console.log('\nResponse body:\n');
-            console.log(res.body);
+            console.log(colorize(res.body, {
+                pretty: true,
+                colors: {
+                    // Colors convention can be negotiated.
+                    STRING_KEY: 'green',
+                    STRING_LITERAL: 'yellow',
+                    NUMBER_LITERAL: 'red',
+                }}));
             console.log('\n' + sep + '\n');
         }
 
