@@ -167,7 +167,9 @@ class World {
     }
 
     async setBasicAuth(credentials) {
-        const { username, password } = credentials;
+        const secretCredentials = this.replaceVars(credentials);
+
+        const { username, password } = secretCredentials;
         const agent = this.currentAgent;
         const encodedCredentials = Buffer.from(`${username}:${password}`).toString('base64');
         agent.set('Authorization', `Basic ${encodedCredentials}`);
@@ -181,13 +183,15 @@ class World {
     async getOAuthAccessToken(url, credentials) {
         const agent = this.currentAgent;
 
+        const secretCredentials = this.replaceVars(credentials);
+
         // do an oauth2 login
         // only set the bearer token once on the agent
         if (!agent._bat.bearer) {
             const res = await agent
                 .post(this.baseUrl + this.replaceVars(url))
                 .type('form')
-                .send(credentials);
+                .send(secretCredentials);
 
             // get the access token from the response body
             const getAccessToken = body => body.accessToken || body.access_token;
