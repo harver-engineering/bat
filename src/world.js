@@ -18,6 +18,7 @@ const { parse: parseUrl } = require('url');
 const chalk = require('chalk');
 const request = require('superagent');
 const SwaggerParser = require('swagger-parser');
+const colorize = require('json-colorizer');
 
 const agents = new Map();
 const responseCache = new Map();
@@ -52,6 +53,16 @@ class World {
         this.env = process.env.TEST_ENV || null;
         this.responseVars = [];
         this.userVars = [];
+
+        this.debugLogOptions = {
+            pretty: true,
+            colors: {
+            // Colors convention can be negotiated.
+                STRING_KEY: 'green',
+                STRING_LITERAL: 'yellow',
+                NUMBER_LITERAL: 'red',
+            },
+        };
     }
 
     /**
@@ -289,7 +300,11 @@ async function printDebug(info) {
     if (this.debug.length) {
         console.log('\n' + sep + '\n');
         for (const line of this.debug) {
-            console.log(line);
+            try {
+                console.log(colorize(line, this.debugLogOptions));
+            } catch (error){
+                console.log(line);
+            }
         }
         console.log('\n' + sep + '\n');
     }
@@ -304,7 +319,7 @@ async function printDebug(info) {
             console.log('Url:\n');
             console.log(this.req.url);
             console.log('\nResponse body:\n');
-            console.log(res.body);
+            console.log(colorize(res.body, this.debugLogOptions));
             console.log('\n' + sep + '\n');
         }
 
